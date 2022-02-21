@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <title>&#x1F525 FHIR Explorer &#x1F525</title>
+
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+
+    <!-- Favicons -->
+    <link rel="apple-touch-icon" sizes="180x180" href="assets/favicon/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="assets/favicon/favicon-16x16.png">
+
+    <!-- CSS -->
+    <link href="assets/css/vis-timeline-graph2d.min.css" rel="stylesheet" type="text/css" />
+    <link href="assets/css/medtimeline.css" rel="stylesheet" type="text/css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tarekraafat/autocomplete.js@10.2.6/dist/css/autoComplete.02.min.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <link href="assets/css/material.css" rel="stylesheet" />
+    <style>
+        /* Override the default blue of "pill" links */
+        
+        .nav-pills .nav-link.active {
+            background-color: #f09000 !important;
+        }
+    </style>
+
+    <!--  Fonts and icons -->
+    <link href="http://maxcdn.bootstrapcdn.com/font-awesome/latest/css/font-awesome.min.css" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Material+Icons" />
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+</head>
+
+<body>
+    <div class="wrapper">
+
+        <!-- Sidebar, left side navigation -->
+        <div class="sidebar" data-active-color="rose" data-background-color="black" data-image="assets/img/sidebar-7.jpg">
+            <div class="sidebar-wrapper">
+                <!--Branding-->
+                <div class="logo">
+                    <a class="simple-text logo-mini">&#x1F525</a>
+                    <a class="simple-text logo-normal">FHIR Explorer</a>
+                </div>
+                <!--User-->
+                <div class="user">
+                    <div class="photo">
+                        <img src="assets/img/avatar1.png" />
+                    </div>
+                    <div class="info">
+                        <a data-toggle="collapse" href="#collapseSidebar" class="collapsed">
+                            <span>
+                                Anonymous User
+                                <b class="caret"></b>
+                            </span>
+                        </a>
+                        <!--Expanded user-->
+                        <div class="collapse" id="collapseSidebar">
+                            <div class="photo">
+                                <a href="#"><i class="material-icons">edit</i></a>
+                            </div>
+                            <div class="info">
+                                <a data-toggle="collapse" href="#" class="collapsed">
+                                    <span>
+                                        Edit Profile
+                                    </span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!--Navbar list-->
+                <div class="nav flex-column nav-pills" id="sidebarNav" role="tablist" aria-orientation="vertical">
+                    <a class="nav-link text-white active" id="sidebarNav-home-tab" data-toggle="pill" href="#sidebarNav-home" role="tab" aria-controls="sidebarNav-home" aria-selected="true">
+                        Home
+                    </a>
+                    <a class="nav-link text-white" id="sidebarNav-patient-tab" data-toggle="pill" href="#sidebarNav-patient" role="tab" aria-controls="sidebarNav-profile" aria-selected="false">
+                        <i class="material-icons">person_search</i>Patient
+                    </a>
+                    <a class="nav-link text-white" id="sidebarNav-medications-tab" data-toggle="pill" href="#sidebarNav-medications" role="tab" aria-controls="sidebarNav-messages" aria-selected="false">
+                        <i class="material-icons">medication</i>Medications
+                    </a>
+                    <a class="nav-link text-white" id="sidebarNav-resourceViewer-tab" data-toggle="pill" href="#sidebarNav-resourceViewer" role="tab" aria-controls="sidebarNav-settings" aria-selected="false">
+                        <i class="material-icons">wysiwyg</i>Resource Viewer
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Entire right side, including header, main frame, footer -->
+        <div class="main-panel">
+
+            <!-- Headerbar -->
+            <nav class="navbar navbar-expand-lg navbar-transparent navbar-absolute fixed-top ">
+                <div class="container-fluid">
+                    <div class="navbar-wrapper">
+                        <div class="navbar-minimize">
+                            <button id="minimizeSidebar" class="btn btn-just-icon btn-white btn-fab btn-round">
+                                <i class="material-icons text_align-center visible-on-sidebar-regular">more_vert</i>
+                                <i class="material-icons design_bullet-list-67 visible-on-sidebar-mini">view_list</i>
+                            </button>
+                        </div>
+                        <a class="navbar-brand" href="#">
+                            <div id="HeaderbarTitle">FHIR Explorer</div>
+                        </a>
+                    </div>
+                    <button class="navbar-toggler" type="button" data-toggle="collapse" aria-controls="navigation-index" aria-expanded="false" aria-label="Toggle navigation">
+                        <span class="sr-only">Toggle navigation</span>
+                        <span class="navbar-toggler-icon icon-bar"></span>
+                        <span class="navbar-toggler-icon icon-bar"></span>
+                        <span class="navbar-toggler-icon icon-bar"></span>
+                    </button>
+                    <div class="collapse navbar-collapse justify-content-end">
+                        <a class="nav-link" href="#">
+                            <i class="material-icons">notifications</i>
+                            <span class="notification" style="position: relative; top: -30px; left: 12px;">3</span>
+                        </a>
+                    </div>
+                </div>
+            </nav>
+
+            <!-- Main content frame -->
+            <div class="content">
+                <div class="container-fluid">
+                    <!---------------------------------------------------------------------->
+                    <!------------------------ START: Main Section ------------------------->
+
+
+                    <div class="tab-content" id="sidebarNavContent">
+                        <div class="tab-pane fade show active" id="sidebarNav-home" aria-labelledby="sidebarNav-home-tab" role="tabpanel">
+                            Experiments in FHIR. Click some stuff on the left.
+                        </div>
+                        <div class="tab-pane fade" id="sidebarNav-patient" aria-labelledby="sidebarNav-patient-tab" role="tabpanel">
+                            <input id="autoComplete">
+                            <input type="checkbox" id="deepSearchCheckbox" onchange="deepSearch = this.checked; autoCompleteJS.start();">
+                            <label for="deepSearch">Deep Search (phonetic match across all names)</label><br>
+                        </div>
+                        <div class="tab-pane fade" id="sidebarNav-medications" aria-labelledby="sidebarNav-medications-tab" role="tabpanel">
+                            I need to debug this. Meanwhile, slide the panel below to the left or right.
+                            <div id="visualization"></div>
+                        </div>
+                        <div class="tab-pane fade" id="sidebarNav-resourceViewer" aria-labelledby="sidebarNav-resourceViewer-tab" role="tabpanel">
+                            4
+                        </div>
+                    </div>
+
+
+                    <!------------------------- END: Main Section -------------------------->
+                    <!---------------------------------------------------------------------->
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <footer class="footer">
+                <div class="container-fluid">
+                    <nav class="pull-left">
+                        <ul>
+                            <li>
+                                <a href="mailto:adam@smilecdr.com">
+                                    adam@smilecdr.com
+                                </a>
+                            </li>
+                            <li>
+                                <a href="http://www.smilecdr.com">
+                                    Smile CDR
+                                </a>
+                            </li>
+                        </ul>
+                    </nav>
+                    <p class="copyright pull-right">
+                        Made with &#x1F525 Adam Cole
+                    </p>
+                </div>
+            </footer>
+
+        </div>
+
+    </div>
+</body>
+
+
+<!--   Core JS Files   -->
+<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+<script src="assets/js/material.min.js" type="text/javascript"></script>
+<script src="assets/js/perfect-scrollbar.jquery.min.js" type="text/javascript"></script>
+
+<!-- Material Dashboard javascript methods -->
+<script src="assets/js/material-dashboard.js?v=1.3.0"></script>
+
+<!-- MedTimeline -->
+<script src="assets/js/vis-timeline-graph2d.min.js"></script>
+<script src="assets/js/medtimeline-mock-data.js"></script>
+<script src="assets/js/medtimeline.js"></script>
+
+<!-- PatientAutocomplete -->
+<script src="https://cdn.jsdelivr.net/npm/@tarekraafat/autocomplete.js@10.2.6/dist/autoComplete.min.js"></script>
+<script src="assets/js/PatientAutocomplete.js"></script>
+
+
+
+<!-- Javascript to be run only once the page is ready -->
+<script>
+    $(document).ready(function() {
+
+        // Change the main content DIV when the left Sidebar navigation button is changed
+        $('#sidebarNav a').on('click', function(e) {
+            // Update the Headerbar
+            let curTab = (e.currentTarget.id).substr(11);
+            curTab = curTab.substr(0, curTab.length - 4);
+            curTab = `FHIR Explorer <i class='material-icons'>keyboard_double_arrow_right</i>` + curTab.toUpperCase();
+            document.getElementById("HeaderbarTitle").innerHTML = curTab;
+            // Actually change the tab
+            e.preventDefault()
+            $(this).tab('show')
+        })
+
+
+    })
+</script>
+
+</html>
