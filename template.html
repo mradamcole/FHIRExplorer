@@ -14,17 +14,58 @@
     <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="assets/favicon/favicon-16x16.png">
 
-    <!-- CSS -->
-    <link href="assets/css/vis-timeline-graph2d.min.css" rel="stylesheet" type="text/css" />
-    <link href="assets/css/medtimeline.css" rel="stylesheet" type="text/css" />
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tarekraafat/autocomplete.js@10.2.6/dist/css/autoComplete.02.min.css">
+    <!-- CSS: generic -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
     <link href="assets/css/material.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
+    <!-- CSS: Medtimeline -->
+    <link href="assets/css/vis-timeline-graph2d.min.css" rel="stylesheet" type="text/css" />
+    <link href="assets/css/medtimeline.css" rel="stylesheet" type="text/css" />
+    <!-- CSS: autoComplete -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tarekraafat/autocomplete.js@10.2.6/dist/css/autoComplete.02.min.css">
+    <!-- CSS: Tabulator -->
+    <link href="https://unpkg.com/tabulator-tables@5.1.2/dist/css/tabulator.min.css" rel="stylesheet">
     <style>
         /* Override the default blue of "pill" links */
         
         .nav-pills .nav-link.active {
             background-color: #f09000 !important;
+        }
+        /* Animate the 'loading' bar for fhirGrid */
+        
+        @keyframes fadeIn {
+            0% {
+                opacity: 0;
+            }
+            50% {
+                opacity: 33%
+            }
+        }
+        
+        .fadeInFadeOut {
+            animation: fadeIn 800ms infinite alternate;
+        }
+        /* Style the FHIR server select */
+        
+        .serverSelect {
+            background-color: #e9ecef;
+            border: 1px solid #ced4da;
+            border-top-color: rgb(206, 212, 218);
+            border-top-style: solid;
+            border-top-width: 1px;
+            border-right-color: rgb(206, 212, 218);
+            border-right-style: solid;
+            border-right-width: 1px;
+            border-bottom-color: rgb(206, 212, 218);
+            border-bottom-style: solid;
+            border-bottom-width: 1px;
+            border-left-width: 0px;
+            border-radius: 0.25rem;
+            padding-top: 0px;
+            border-top-left-radius: 0;
+            border-bottom-left-radius: 0;
+            padding-bottom: 0px;
+            padding-left: 5px;
         }
     </style>
 
@@ -114,6 +155,21 @@
                         <span class="navbar-toggler-icon icon-bar"></span>
                     </button>
                     <div class="collapse navbar-collapse justify-content-end">
+                        <form>
+                            <div class="form-group" style="margin-top: 0px;">
+                                <div class="input-group mb-2">
+                                    <div class="input-group-prepend">
+                                        <div class="input-group-text"><i class="bi bi-pc"></i></div>
+                                    </div>
+                                    <select class="serverSelect" id="FHIRServer" onChange="fhirGridParams.baseURL=this.value; loadPatientsInit('')">
+                                        <option>http://hapi.fhir.org/baseR4/</option>
+                                        <option>http://try.smilecdr.com/baseR4/</option>
+                                        <option>https://conference.smilecdr.com/gateway/</option>
+                                        <option>https://conference.smilecdr.com/fhir-request/</option> 
+                                    </select>
+                                </div>
+                            </div>
+                        </form>
                         <a class="nav-link" href="#">
                             <i class="material-icons">notifications</i>
                             <span class="notification" style="position: relative; top: -30px; left: 12px;">3</span>
@@ -131,7 +187,27 @@
 
                     <div class="tab-content" id="sidebarNavContent">
                         <div class="tab-pane fade show active" id="sidebarNav-home" aria-labelledby="sidebarNav-home-tab" role="tabpanel">
-                            Experiments in FHIR. Click some stuff on the left.
+                            <!-- Patient Search (search box, search grid) -->
+                            <form>
+                                <div class="input-group " style="margin-bottom: 0px;">
+                                    <div style="padding-top: 13px; padding-right:4px;">
+                                        <i class="bi bi-search"></i>
+                                    </div>
+                                    <input type="text" id="patientFilter" class="form-control" style="padding-top: 0px; padding-bottom: 2px;" placeholder="Filter patient by" aria-label="patientFilter" aria-describedby="basic-addon1">
+                                    <div class="input-group-append">
+                                        <select id="patientFilterField" onchange="loadPatientsInit(document.getElementById('patientFilter').value)" style="background-color: transparent; border: transparent; font-family: Roboto, Helvetica; font-size: 14px; color: rgb(73, 80, 87);">
+                                            <option value="family">Family name (starts with)</option>
+                                            <option value="name">Name (any part)</option>
+                                            <option value="identifier">Identifier (exact)</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </form>
+                            <!-- The FHIRGrid Container, the animation for server fetches -->
+                            <div id="fhirGridContainer" style="visibility:visible;"></div>
+                            <div id="fhirGridContainerLoading" class="fadeInFadeOut" style="z-index: 999; visibility:visible; background-color:rgb(0, 140, 255); height:3px;"></div>
+
+
                         </div>
                         <div class="tab-pane fade" id="sidebarNav-patient" aria-labelledby="sidebarNav-patient-tab" role="tabpanel">
                             <input id="autoComplete">
@@ -139,11 +215,11 @@
                             <label for="deepSearch">Deep Search (phonetic match across all names)</label><br>
                         </div>
                         <div class="tab-pane fade" id="sidebarNav-medications" aria-labelledby="sidebarNav-medications-tab" role="tabpanel">
-                            I need to debug this. Meanwhile, slide the panel below to the left or right.
+                            Sample medication profile, including adherenace scores
                             <div id="visualization"></div>
                         </div>
                         <div class="tab-pane fade" id="sidebarNav-resourceViewer" aria-labelledby="sidebarNav-resourceViewer-tab" role="tabpanel">
-                            4
+                            Resource Viewer
                         </div>
                     </div>
 
@@ -159,18 +235,18 @@
                     <nav class="pull-left">
                         <ul>
                             <li>
-                                <a href="mailto:adam@smilecdr.com">
+                                <a href="mailto:adam@smilecdr.com" style="padding-top: 13px; padding-bottom: 0px;">
                                     adam@smilecdr.com
                                 </a>
                             </li>
                             <li>
-                                <a href="http://www.smilecdr.com">
+                                <a href="http://www.smilecdr.com" style="padding-top: 13px; padding-bottom: 0px;">
                                     Smile CDR
                                 </a>
                             </li>
                         </ul>
                     </nav>
-                    <p class="copyright pull-right">
+                    <p class="copyright pull-right" style="padding-top: 13px; padding-bottom: 0px;">
                         Made with &#x1F525 Adam Cole
                     </p>
                 </div>
@@ -201,10 +277,192 @@
 <script src="https://cdn.jsdelivr.net/npm/@tarekraafat/autocomplete.js@10.2.6/dist/autoComplete.min.js"></script>
 <script src="assets/js/PatientAutocomplete.js"></script>
 
+<!-- Tabulator (fhirGrid) -->
+<script type="text/javascript" src="https://unpkg.com/tabulator-tables@5.1.2/dist/js/tabulator.min.js"></script>
+
+<!-- FHIRPath -->
+<script src="assets/js/fhirpath.min.js"></script>
+<script src="assets/js/fhirpath.r4.min.js"></script>
 
 
 <!-- Javascript to be run only once the page is ready -->
 <script>
+    //There a JS conflict with a deprecated function in jquery3.2.1. This is a work around to render the inital timeline
+    let timelineInstantiated = false;
+    timeline.on('changed', function() {
+        if (!timelineInstantiated) {
+            timelineInstantiated = true;
+            timeline.redraw();
+        }
+    })
+
+    /*************** Reusable FHIR functions ***************/
+    //Find a name=value in a FHIR array, and return a given node within. (E.g. Find link["relation"]="next" and return the URL)
+    FHIRRefByRef = (ar, searchName, searchValue, getNode) => {
+        for (let i = 0; i < ar.length; i++) {
+            if (ar[i][searchName] == searchValue) {
+                return ar[i][getNode];
+                break;
+            }
+        }
+        return "";
+    }
+
+    /*************** Reusable Utility functions ***************/
+    //Wait for a small delay while typing in the search box before calling the server
+    function keypressDelay(fn, ms) {
+        let timer = 0
+        return function(...args) {
+            clearTimeout(timer)
+            timer = setTimeout(fn.bind(this, ...args), ms || 0)
+        }
+    }
+
+    //Get the parameter value from the subsection first; otherwise get it from the root
+    getParam = (paramList, section, param) => {
+        return paramList[section][param] || paramList[param]
+    }
+
+    //async/await fetch (i.e. Promise AJAX)
+    async function loadPatients(api, clearData) {
+        try {
+            document.getElementById("fhirGridContainerLoading").style.visibility = "visible";
+            const source = await fetch(api);
+            const data = await source.json();
+            if (clearData) fhirGrid.clearData();
+            fhirGridParams.pageURL = FHIRRefByRef(data.link, "relation", "next", "url");
+            fhirGrid.addData(autoCompleteFHIRToArray(data));
+            document.getElementById("fhirGridContainerLoading").style.visibility = "hidden";
+        } catch (error) {
+            console.log("err: ", error);
+        }
+    }
+
+
+    /*************** FHIRGrid Specific functions ***************/
+    //FHIRGrid Global variables. Global variables followed by templates (parameter collection) for different grid
+    let fhirGridParams = {
+        template: "patient", //Which of the templates below (within this fhirGridParams block) should be used.
+        pageURL: "", // Place holder for the URL of the next page (for lazy loading)
+        loadDelay: 0, // Delay time between grabbing the pages
+        height: 400,
+        width: 300,
+        baseURL: "http://hapi.fhir.org/baseR4/",
+        elements: "identifier,name", //CSV of the resource elements to return from the server
+        patient: {
+            searchField: "PatientSearch", //Search box (input text box)
+            displayField: "full", //When a row is clicked, this is the value that will be pasted into the text box
+            saveField: "id", //When a row is clicked, this is the value that will be stored in PatientSearchValue
+            resource: "Patient", //The FHIR Resoruce to be searched
+            //The columns to display in the fhirGrid
+            cols: [{
+                title: "id",
+                field: "id",
+                visible: false,
+            }, {
+                title: "Last name",
+                field: "lname",
+                width: "200",
+                resizable: true,
+                headerSort: true,
+            }, {
+                title: "Given name",
+                field: "given",
+                resizable: true,
+                headerSort: true,
+            }, {
+                title: "Identifier",
+                field: "identifier",
+                resizable: true,
+                headerSort: false,
+            }],
+        },
+    }
+
+    //Add a listener for key press on the search box
+    $('#' + "patientFilter").keyup(keypressDelay(function(e) {
+        loadPatientsInit(this.value)
+    }, 500));
+
+    //Convert the result Bundle into a flat array that can be used by Tabulator
+    autoCompleteFHIRToArray = (data) => {
+        let res = {} //The current Resource within the Bundle returned from the server
+        let el = {} //The constructor element. A single resource transformed into a single row (element)
+        let ar = [] //The constuctor array. All the resources in the page to be appended (lazy load) to the fhirGrid
+        for (let key in data.entry) {
+            res = data.entry[key].resource
+            try {
+                let identifier = JSON.stringify(fhirpath.evaluate(res, "Patient.identifier.type.coding.code.first() | ' (' + Patient.identifier.type.coding.system.first() + '): ' | Patient.identifier.value.first() | ', others: [' + Patient.identifier.value.tail() + ']'"))
+                identifier = identifier.replace(/\[\"/, "").replace(/\"\]/, "").replace(/\[\]/, "").replace(/\"\,\"/g, " ");
+                el = {
+                    "id": res.id,
+                    "lname": res.name[0].family,
+                    "given": res.name[0].given.join(" "),
+                    "full": res.name[0].family + ", " + res.name[0].given.join(" ") || "",
+                    "identifier": identifier
+                };
+                ar.push(el);
+            } catch {}
+        }
+        return ar
+    }
+
+    //Reset the data in the dropdown Table and start a new query
+    loadPatientsInit = (query) => {
+        let q = "";
+        switch (document.getElementById("patientFilterField").value) {
+            case "family":
+                q = "family=";
+                break;
+            case "name":
+                q = "phonetic=";
+                break;
+            case "identifier":
+                q = "identifier=";
+                break;
+        }
+        let api = getParam(fhirGridParams, fhirGridParams.template, "baseURL") +
+            getParam(fhirGridParams, fhirGridParams.template, "resource") + "?" +
+            "_elements=" + getParam(fhirGridParams, fhirGridParams.template, "elements") +
+            (query == "" ? "" :
+                "&" + q + query
+            );
+        loadPatients(api, typeof fhirGrid != "undefined");
+    }
+
+    //Construct the fhirGridContainer
+    var fhirGrid = new Tabulator("#fhirGridContainer", {
+        autoColumns: true,
+        height: getParam(fhirGridParams, fhirGridParams.template, "height"),
+        layout: "fitDataStretch",
+        placeholder: "Fetching some data...",
+        columns: getParam(fhirGridParams, fhirGridParams.template, "cols"),
+    });
+
+    //Lazy load (grab next page on vertical scroll)
+    fhirGrid.on("scrollVertical", function(top) {
+        // Add a small delay between lazy load attempts
+        if (fhirGridParams.loadDelay == 0) {
+            // let tHeight = document.getElementsByClassName("tabulator-tableholder")[0].clientHeight;
+            // if (tHeight - top < 50) {
+            fhirGridParams.loadDelay = new Date().getTime();
+            console.log("Note: a fetch 'err:' may appear below. Ignore this error, it is due to scrolling triggering rapid pagination.")
+            loadPatients(fhirGridParams.pageURL);
+            // }
+        } else {
+            // Add small delay before loading next page. (Even so, the server may still not be ready and throw an error. That's OK, just keep trying every 500ms)
+            if ((new Date().getTime() - fhirGridParams.loadDelay) > 500) fhirGridParams.loadDelay = 0;
+        }
+    });
+
+    //Add a listener for selecting a row in the fhirGrid
+    fhirGrid.on("rowClick", function(e, row) {
+        document.getElementById(getParam(fhirGridParams, fhirGridParams.template, "searchField")).value = row.getData()[getParam(fhirGridParams, fhirGridParams.template, "displayField")];
+        document.getElementById(getParam(fhirGridParams, fhirGridParams.template, "searchField") + "Value").value = row.getData()[getParam(fhirGridParams, fhirGridParams.template, "saveField")];
+    });
+
+
+    //OnPageReady functions
     $(document).ready(function() {
 
         // Change the main content DIV when the left Sidebar navigation button is changed
@@ -219,6 +477,16 @@
             $(this).tab('show')
         })
 
+        //Position the loading bar
+        container = document.getElementById("fhirGridContainerLoading")
+        container.style.position = "relative";
+        container.style.top = `-${getParam(fhirGridParams, fhirGridParams.template, "height")-31}px`;
+        container.style.width = getParam(fhirGridParams, fhirGridParams.template, "width");
+
+        //Load up the FHIRGrid
+        setTimeout(() => {
+            loadPatientsInit("")
+        }, 500);
 
     })
 </script>

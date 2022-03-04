@@ -1,0 +1,120 @@
+<html>
+
+<head>
+    <meta charset="utf-8">
+
+    <link href="https://unpkg.com/tabulator-tables@5.1.2/dist/css/tabulator.min.css" rel="stylesheet">
+    <script type="text/javascript" src="https://unpkg.com/tabulator-tables@5.1.2/dist/js/tabulator.min.js"></script>
+
+    <script src="assets/js/fhirpath.min.js"></script>
+    <script src="assets/js/fhirpath.r4.min.js"></script>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+
+
+
+    <style>
+        /* animation while the server is fetching data */
+        
+        @keyframes fadeIn {
+            0% {
+                opacity: 0;
+            }
+            50% {
+                opacity: 33%
+            }
+        }
+        
+        .fadeInFadeOut {
+            animation: fadeIn 800ms infinite alternate;
+        }
+    </style>
+</head>
+
+<body class="full-height">
+
+    <!--************** The dropdown search box **************-->
+    <!-- Only one search field per page supported -->
+    <div class="form-group" style="width:400px;">
+        <label for="PatientSearch" class="bmd-label-floating">Patientx:</label>
+        <input type="text" class="form-control" id="PatientSearch" required onblur="setTimeout(() => {
+            document.getElementById('dropdownTableContainer').style.visibility = 'hidden';
+            document.getElementById('dropdownTableContainerLoading').style.visibility = 'hidden';
+          }, 250);">
+        <input type="hidden" value="" id="PatientSearchValue">
+    </div>
+    <!-- The Dropdown Container, the animation for server fetches -->
+    <div id="dropdownTableContainer" style="visibility:hidden;"></div>
+    <div id="dropdownTableContainerLoading" class="fadeInFadeOut" style="z-index: 999; visibility:hidden; background-color:rgb(0, 140, 255); height:3px;"></div>
+    <script>
+        //DropdownTable Global variables. Global variables followed by templates (parameter collection) for different searches
+        let dropdownTableParams = {
+            template: "patient", //Which of the templates below (within this dropdownTableParams block) should be used for the active search.
+            pageURL: "", // Place holder for the URL of the next page (for lazy loading)
+            loadDelay: 0, // Delay time between grabbing the pages
+            deepSearch: false, // Search phonetically any part of common name elements; otherwise search exact start of family name. (This will override the searchWithin parameter)
+            searchWithin: "family",
+            height: 150,
+            width: 300,
+            baseURL: "http://hapi.fhir.org/baseR4/",
+            elements: "identifier,name", //CSV of the resource elements to return from the server
+            patient: {
+                searchField: "PatientSearch", //Search box (input text box)
+                displayField: "full", //When a row is clicked, this is the value that will be pasted into the text box
+                saveField: "id", //When a row is clicked, this is the value that will be stored in PatientSearchValue
+                resource: "Patient", //The FHIR Resoruce to be searched
+                deepSearch: true, //See above
+                //The columns to display in the dropdownTable
+                cols: [{
+                    title: "id",
+                    field: "id",
+                    visible: false,
+                }, {
+                    title: "Last name",
+                    field: "lname",
+                    width: "60%",
+                    resizable: false,
+                    headerSort: false,
+                }, {
+                    title: "Given name",
+                    field: "given",
+                    resizable: false,
+                    headerSort: false,
+                }, ],
+            },
+            patient2: {
+                height: 350,
+                width: 600,
+                searchField: "PatientSearch2",
+                displayField: "full",
+                saveField: "id",
+                resource: "Patient",
+                searchWithin: "identifier:contains", //Full text indexing on the given field required on the server for "contains" to work (otherwise containes is ignored and an exact match is required)
+                //The columns to display in the dropdownTable
+                cols: [{
+                    title: "id",
+                    field: "id",
+                    visible: false,
+                }, {
+                    title: "Identifier(s)",
+                    field: "identifier",
+                    width: "70%",
+                    resizable: false,
+                    headerSort: false,
+                }, {
+                    title: "Full name",
+                    field: "full",
+                    resizable: false,
+                    headerSort: false,
+                }, ],
+            }
+        }
+    </script>
+
+</body>
+
+<script src="assets/js/smile_abc_fhir.js"></script>
+<script src="assets/js/smile_abc_utility.js"></script>
+<script src="assets/js/smile_abc_dropdowntable.js"></script>
+
+</html>
