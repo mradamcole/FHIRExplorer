@@ -45,6 +45,10 @@
         .fadeInFadeOut {
             animation: fadeIn 800ms infinite alternate;
         }
+        
+        .fadeInFadeOutFast {
+            animation: fadeIn 300ms infinite alternate;
+        }
         /* Style the FHIR server select */
         
         .serverSelect {
@@ -186,6 +190,8 @@
 
 
                     <div class="tab-content" id="sidebarNavContent">
+
+                        <!-- Home -->
                         <div class="tab-pane fade show active" id="sidebarNav-home" aria-labelledby="sidebarNav-home-tab" role="tabpanel">
                             <!-- Patient Search (search box, search grid) -->
                             <form>
@@ -206,20 +212,39 @@
                             <!-- The FHIRGrid Container, the animation for server fetches -->
                             <div id="fhirGridContainer" style="visibility:visible;"></div>
                             <div id="fhirGridContainerLoading" class="fadeInFadeOut" style="z-index: 999; visibility:visible; background-color:rgb(0, 140, 255); height:3px;"></div>
-
-
                         </div>
+
+                        <!-- Patient -->
                         <div class="tab-pane fade" id="sidebarNav-patient" aria-labelledby="sidebarNav-patient-tab" role="tabpanel">
-                            <input id="autoComplete">
-                            <input type="checkbox" id="deepSearchCheckbox" onchange="deepSearch = this.checked; autoCompleteJS.start();">
-                            <label for="deepSearch">Deep Search (phonetic match across all names)</label><br>
+                            <div id="Patient-patientNameHeader"></div>
+                            <a href="https://conference.smilecdr.com/smart-apps/gallery/#/home" target="_blank">
+                                <div id="Patient-alert" class="alert alert-warning" role="alert" style="padding:10px; visibility: hidden; text-align: center;"></div>
+                            </a>
+                            <div id="webSocketConsoleContainer" class="col col-md-4" style="visibility: hidden; overflow-y: auto;">
+                                <p></p>
+                                <div id="webSocketConsoleTitle">Websocket console
+                                    <a href="#" onclick="document.getElementById('webSocketConsoleContainer').style.visibility='hidden'; document.getElementById('webSocketConsoleContainer').style.height='0px'">
+                                        <i class="bi bi-eye-slash"></i></a>
+                                </div>
+                                <div id="webSocketConsole" style="background-color: #000; height:250px; font-family: 'Courier New', Courier, monospace; color: #008f20; font-size: 12px; border: 2px solid #808080; padding: 5px;">
+                                    Listening
+                                </div>
+                            </div>
                         </div>
+
+                        <!-- Medications -->
                         <div class="tab-pane fade" id="sidebarNav-medications" aria-labelledby="sidebarNav-medications-tab" role="tabpanel">
                             Sample medication profile, including adherenace scores
                             <div id="visualization"></div>
                         </div>
+
+                        <!-- Resource Viewer -->
                         <div class="tab-pane fade" id="sidebarNav-resourceViewer" aria-labelledby="sidebarNav-resourceViewer-tab" role="tabpanel">
-                            Resource Viewer
+                            Resource Viewer<br>
+                            <input id="autoComplete">
+                            <input type="checkbox" id="deepSearchCheckbox" onchange="deepSearch = this.checked; autoCompleteJS.start();">
+                            <label for="deepSearch">Deep Search (phonetic match across all names)</label><br>
+
                         </div>
                     </div>
 
@@ -330,9 +355,22 @@
             const source = await fetch(api);
             const data = await source.json();
             if (clearData) fhirGrid.clearData();
-            fhirGridParams.pageURL = FHIRRefByRef(data.link, "relation", "next", "url");
+            fhirGridParams.pageURL = FHIRRefByRef(data.link, "relation", "next", "url").replace(/http:/, "https:");
             fhirGrid.addData(autoCompleteFHIRToArray(data));
             document.getElementById("fhirGridContainerLoading").style.visibility = "hidden";
+        } catch (error) {
+            console.log("err: ", error);
+        }
+    }
+
+    //Open a Websocket to listen for events from the server
+    //Interim cheat - use polling. (WebSocket should be easy, but need tried-and-true for demo https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API)
+    //Example fn: execAPI("https://try.smilecdr.com/baseR4/Patient", function(param){ console.log(param) });
+    async function execAPI(api, fn) {
+        try {
+            const source = await fetch(api);
+            const data = await source.json();
+            fn(data);
         } catch (error) {
             console.log("err: ", error);
         }
@@ -344,15 +382,16 @@
     let fhirGridParams = {
         template: "patient", //Which of the templates below (within this fhirGridParams block) should be used.
         pageURL: "", // Place holder for the URL of the next page (for lazy loading)
+        resID: "", //Place holder for the selected row ID
+        resIdentifierValue: "", //Place holder for the selected row ID
+        resIdentifierSystem: "", //Place holder for the selected row ID
         loadDelay: 0, // Delay time between grabbing the pages
         height: 400,
         width: 300,
         baseURL: "https://hapi.fhir.org/baseR4/",
-        elements: "identifier,name", //CSV of the resource elements to return from the server
+        elements: "", //"identifier,name", //CSV of the resource elements to return from the server
         patient: {
-            searchField: "PatientSearch", //Search box (input text box)
-            displayField: "full", //When a row is clicked, this is the value that will be pasted into the text box
-            saveField: "id", //When a row is clicked, this is the value that will be stored in PatientSearchValue
+            id: "id", //When a row is clicked, this is the value that will be saved to fhirGridParams.resID
             resource: "Patient", //The FHIR Resoruce to be searched
             //The columns to display in the fhirGrid
             cols: [{
@@ -368,6 +407,11 @@
             }, {
                 title: "Given name",
                 field: "given",
+                resizable: true,
+                headerSort: true,
+            }, {
+                title: "Birthdate",
+                field: "dob",
                 resizable: true,
                 headerSort: true,
             }, {
@@ -392,13 +436,14 @@
         for (let key in data.entry) {
             res = data.entry[key].resource
             try {
-                let identifier = JSON.stringify(fhirpath.evaluate(res, "Patient.identifier.type.coding.code.first() | ' (' + Patient.identifier.type.coding.system.first() + '): ' | Patient.identifier.value.first() | ', others: [' + Patient.identifier.value.tail() + ']'"))
+                let identifier = JSON.stringify(fhirpath.evaluate(res, "Patient.identifier.type.coding.code.first() | ' (' + Patient.identifier.system.first() + '): ' | Patient.identifier.value.first() | ', others: [' + Patient.identifier.value.tail() + ']'"))
                 identifier = identifier.replace(/\[\"/, "").replace(/\"\]/, "").replace(/\[\]/, "").replace(/\"\,\"/g, " ");
                 el = {
                     "id": res.id,
                     "lname": res.name[0].family,
                     "given": res.name[0].given.join(" "),
                     "full": res.name[0].family + ", " + res.name[0].given.join(" ") || "",
+                    "dob": res.birthDate,
                     "identifier": identifier
                 };
                 ar.push(el);
@@ -443,12 +488,9 @@
     fhirGrid.on("scrollVertical", function(top) {
         // Add a small delay between lazy load attempts
         if (fhirGridParams.loadDelay == 0) {
-            // let tHeight = document.getElementsByClassName("tabulator-tableholder")[0].clientHeight;
-            // if (tHeight - top < 50) {
             fhirGridParams.loadDelay = new Date().getTime();
             console.log("Note: a fetch 'err:' may appear below. Ignore this error, it is due to scrolling triggering rapid pagination.")
             loadPatients(fhirGridParams.pageURL);
-            // }
         } else {
             // Add small delay before loading next page. (Even so, the server may still not be ready and throw an error. That's OK, just keep trying every 500ms)
             if ((new Date().getTime() - fhirGridParams.loadDelay) > 500) fhirGridParams.loadDelay = 0;
@@ -457,9 +499,43 @@
 
     //Add a listener for selecting a row in the fhirGrid
     fhirGrid.on("rowClick", function(e, row) {
-        document.getElementById(getParam(fhirGridParams, fhirGridParams.template, "searchField")).value = row.getData()[getParam(fhirGridParams, fhirGridParams.template, "displayField")];
-        document.getElementById(getParam(fhirGridParams, fhirGridParams.template, "searchField") + "Value").value = row.getData()[getParam(fhirGridParams, fhirGridParams.template, "saveField")];
+        fhirGridParams.resID = row.getData()[getParam(fhirGridParams, fhirGridParams.template, "id")];
+        // document.getElementById("webSocketConsoleTitle").innerHTML = "Websocket console";
+        document.getElementById("webSocketConsole").innerHTML = `Resource: ${fhirGridParams.resID}<br><span>Listening</span><span class="fadeInFadeOutFast" style="font-size: 10px;"><i class="bi bi-file-fill"></i></span>`;
+        document.getElementById("webSocketConsoleContainer").style.visibility = "visible";
+        setInterval(pollServer, 3000);
+        document.getElementById("Patient-patientNameHeader").innerHTML = `<b>${row.getData()["full"]}</b> [ID:${fhirGridParams.resID}]`;
+        $('#sidebarNav-patient-tab').tab('show');
     });
+
+    //This should really be a WebSocket, but too risky for the demo
+    fhirGridParams.lastObs = 0;
+    let poll = 0;
+    pollServer = () => {
+        execAPI(`${fhirGridParams.baseURL}Observation?patient=${fhirGridParams.resID}&_count=100`, function(result) { //_count --> really should be using lastn instead, but I presume that doesn't work with the Gateway
+            poll++;
+            console.log(poll)
+            result = result.entry;
+            let maxTs = 0;
+            for (let key in result) {
+                let res = result[key].resource;
+                let ts = new Date(res.meta.lastUpdated) * 1;
+                if (ts > fhirGridParams.lastObs && poll > 1) {
+                    //New Observation
+                    let s = document.getElementById("webSocketConsole").innerHTML;
+                    let cursor = '<span class="fadeInFadeOutFast" style="font-size: 10px;"><i class="bi bi-file-fill"></i></span>';
+                    let pos = s.indexOf(cursor);
+                    s = s.substring(0, pos) + `<br>event: new Observation id=${res.id}<br><span>Listening</span>` + cursor;
+                    document.getElementById("webSocketConsole").innerHTML = s;
+                    document.getElementById("Patient-alert").style.visibility = "visible";
+                    document.getElementById("Patient-alert").innerHTML = `Patient at risk of CKD. New risk factor ${res.code.text}, ${res.valueQuantity.value}${res.valueQuantity.unit}. Click here for suggested care plan.`;
+                    console.log("new obs:", res, s)
+                }
+                maxTs = Math.max(maxTs, ts);
+            }
+            fhirGridParams.lastObs = maxTs;
+        });
+    }
 
 
     //OnPageReady functions
