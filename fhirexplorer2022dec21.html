@@ -1,0 +1,718 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <title>FHIR &#x1F525 Explorer</title>
+
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+
+    <!-- Favicons -->
+    <link rel="apple-touch-icon" sizes="180x180" href="assets/favicon/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="assets/favicon/favicon-16x16.png">
+
+    <!-- CSS: generic -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="assets/css/material.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
+
+    <!--  Fonts and icons -->
+    <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/font-awesome/latest/css/font-awesome.min.css" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Material+Icons" />
+    <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+    <style>
+        /* Override the default blue of "pill" links */
+        
+        .nav-pills .nav-link.active {
+            background-color: #f09000 !important;
+        }
+        /********** Animate the 'loading' bar for fhirGrid **********/
+        
+        @keyframes fadeIn {
+            0% {
+                opacity: 0;
+            }
+            50% {
+                opacity: 33%
+            }
+        }
+        
+        .fadeInFadeOut {
+            animation: fadeIn 800ms infinite alternate;
+        }
+        
+        .fadeInFadeOutFast {
+            animation: fadeIn 300ms infinite alternate;
+        }
+        /********** Style the FHIR server select **********/
+        
+        .serverSelect {
+            background-color: #e9ecef;
+            border: 1px solid #ced4da;
+            border-top-color: rgb(206, 212, 218);
+            border-top-style: solid;
+            border-top-width: 1px;
+            border-right-color: rgb(206, 212, 218);
+            border-right-style: solid;
+            border-right-width: 1px;
+            border-bottom-color: rgb(206, 212, 218);
+            border-bottom-style: solid;
+            border-bottom-width: 1px;
+            border-left-width: 0px;
+            border-radius: 0.25rem;
+            padding-top: 0px;
+            border-top-left-radius: 0;
+            border-bottom-left-radius: 0;
+            padding-bottom: 0px;
+            padding-left: 5px;
+        }
+        /* Tooltip container */
+        
+        .tooltip2 {
+            position: relative;
+            display: inline-block;
+        }
+        /* Tooltip text */
+        
+        .tooltip2 .tooltiptext2 {
+            visibility: hidden;
+            width: 240px;
+            background-color: #6787D2;
+            color: #fff;
+            text-align: center;
+            padding: 5px 0;
+            border-radius: 6px;
+            position: absolute;
+            z-index: 1;
+            opacity: 0;
+            transition: opacity 1s;
+        }
+        /* Show the tooltip text when you mouse over the tooltip container */
+        
+        .tooltip2:hover .tooltiptext2 {
+            visibility: visible;
+            opacity: 1;
+        }
+        /********** Style the FHIR server select **********/
+        
+        #drop-area {
+            border: 2px dashed #ccc;
+            border-radius: 10px;
+            width: 80%;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        
+        #drop-area.highlight {
+            border-color: rgb(32, 0, 128);
+            background-color: rgb(141, 191, 191);
+        }
+        
+        #drop-area.highlight2 {
+            border-color: rgb(32, 0, 128);
+            background-color: rgb(210, 159, 72);
+        }
+        
+        #drop-area.highlight3 {
+            border-color: rgb(32, 0, 128);
+            background-color: rgb(158, 191, 141);
+        }
+        
+        #gallery {
+            margin-top: 10px;
+        }
+        
+        #gallery img {
+            width: 150px;
+            margin-bottom: 10px;
+            margin-right: 10px;
+            vertical-align: middle;
+        }
+        
+        .fileDropButton {
+            display: inline-block;
+            padding: 10px;
+            background: #ccc;
+            cursor: pointer;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+        
+        .fileDropButton:hover {
+            background: #fff;
+        }
+        
+        #fileElem {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="wrapper">
+
+        <!-- Sidebar, left side navigation -->
+        <div class="sidebar" data-active-color="rose" data-background-color="black" data-image="assets/img/sidebar-7.jpg">
+            <div class="sidebar-wrapper">
+                <!--Branding-->
+                <div class="logo">
+                    <a class="simple-text logo-mini">&#x1F525</a>
+                    <a class="simple-text logo-normal" style="text-transform: none; font-size: 16px;">Adam's FHIR Explorer</a>
+                </div>
+
+                <!--Navbar list-->
+                <div class="nav flex-column nav-pills" id="sidebarNav" role="tablist" aria-orientation="vertical">
+                    <a class="nav-link text-white active" id="sidebarNav-server-tab" data-toggle="pill" href="#sidebarNav-server" role="tab" aria-controls="sidebarNav-profile" aria-selected="false">
+                        <i class="bi bi-pc" style="margin-right: 0px;"></i>
+                        <span class="sidebar-mini" style="display: none;">FS</span>
+                        <span class="sidebar-normal" style="display: inline;">FHIR Server</span>
+                    </a>
+                    <a class="nav-link text-white" id="sidebarNav-otics-tab" data-toggle="pill" href="#sidebarNav-otics" role="tab" aria-controls="sidebarNav-profile" aria-selected="false">
+                        <i class="material-icons" style="margin-right: 0px;">psychology</i>
+                        <span class="sidebar-mini" style="display: none;">AI</span>
+                        <span class="sidebar-normal" style="display: inline;">AI Training Data</span>
+                    </a>
+                    <a class="nav-link text-white" id="sidebarNav-patient-tab" data-toggle="pill" href="#sidebarNav-patient" role="tab" aria-controls="sidebarNav-profile" aria-selected="false">
+                        <i class="material-icons" style="margin-right: 0px;">person_search</i>
+                        <span class="sidebar-mini" style="display: none;">Pt</span>
+                        <span class="sidebar-normal" style="display: inline;">Patients</span>
+                    </a>
+                    <a class="nav-link text-white" id="sidebarNav-medications-tab" data-toggle="pill" href="#sidebarNav-medications" role="tab" aria-controls="sidebarNav-messages" aria-selected="false">
+                        <i class="material-icons" style="margin-right: 0px;">medication</i>
+                        <span class="sidebar-mini" style="display: none;">Rx</span>
+                        <span class="sidebar-normal" style="display: inline;">Medications</span>
+                    </a>
+                    <a class="nav-link text-white" id="sidebarNav-cdaloader-tab" data-toggle="pill" href="#sidebarNav-cdaloader" role="tab" aria-controls="sidebarNav-messages" aria-selected="false">
+                        <i class="material-icons" style="margin-right: 0px;">upload_file</i>
+                        <span class="sidebar-mini" style="display: none;">CDA</span>
+                        <span class="sidebar-normal" style="display: inline;">CDA Loader</span>
+                    </a>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Entire right side, including header, main frame, footer -->
+        <div class="main-panel">
+
+            <!-- Headerbar -->
+            <nav class="navbar navbar-expand-lg navbar-transparent navbar-absolute fixed-top ">
+                <div class="container-fluid">
+                    <div class="navbar-wrapper">
+                        <div class="navbar-minimize">
+                            <button id="minimizeSidebar" class="btn btn-just-icon btn-white btn-fab btn-round">
+                                <i class="material-icons text_align-center visible-on-sidebar-regular">more_vert</i>
+                                <i class="material-icons design_bullet-list-67 visible-on-sidebar-mini">view_list</i>
+                            </button>
+                        </div>
+                        <a class="navbar-brand" href="#">
+                            <div id="HeaderbarTitle">FHIR Explorer <i class='material-icons'>keyboard_double_arrow_right</i>Server</div>
+                        </a>
+                    </div>
+                    <button class="navbar-toggler" type="button" data-toggle="collapse" aria-controls="navigation-index" aria-expanded="false" aria-label="Toggle navigation">
+                        <span class="sr-only">Toggle navigation</span>
+                        <span class="navbar-toggler-icon icon-bar"></span>
+                    </button>
+                    <div class="collapse navbar-collapse justify-content-end">
+                        <form>
+                            <div class="form-group" style="margin-top: 0px;">
+                                <div class="input-group mb-2">
+                                    <div class="input-group-prepend">
+                                        <div class="input-group-text"><i class="bi bi-pc"></i></div>
+                                    </div>
+                                    <select class="serverSelect" id="FHIRServer" onChange="dataParams.baseURL=this.value; changeServer();">
+                                    </select>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </nav>
+
+            <!-- Main content frame -->
+            <div class="content" style="padding: 10px 5px 0px 5px;" id="mainContentFrame">
+                <div class="container-fluid">
+                    <!---------------------------------------------------------------------->
+                    <!------------------------ START: Main Section ------------------------->
+
+
+                    <div class="tab-content" id="sidebarNavContent">
+
+                        <!-- Server -->
+                        <div class="tab-pane fade show active" id="sidebarNav-server" aria-labelledby="sidebarNav-home-tab" role="tabpanel">
+                            <div id="serverCapabilities"></div>
+                        </div>
+
+                        <!-- Otics (AI Training Data) -->
+                        <div class="tab-pane fade" id="sidebarNav-otics" aria-labelledby="sidebarNav-home-tab" role="tabpanel">
+                            <iframe id="aiTrainerFrame" src="aitrainer.html" style="border:none; width: 100%;"></iframe>
+                        </div>
+
+                        <!-- Patient -->
+                        <div class="tab-pane fade" id="sidebarNav-patient" aria-labelledby="sidebarNav-patient-tab" role="tabpanel">
+                            <!-- Patient Search (search box, search grid) -->
+                            <form>
+                                <div class="input-group " style="margin-bottom: 0px;">
+                                    <div style="padding-top: 13px; padding-right:4px;">
+                                        <i class="bi bi-search"></i>
+                                    </div>
+                                    <input type="text" id="patientFilter" class="form-control" style="padding-top: 0px; padding-bottom: 2px;" placeholder="Filter patient by" aria-label="patientFilter" aria-describedby="basic-addon1">
+                                    <div class="input-group-append">
+                                        <select id="patientFilterField" onchange="loadPatientsInit(document.getElementById('patientFilter').value)" style="background-color: transparent; border: transparent; font-family: Roboto, Helvetica; font-size: 14px; color: rgb(73, 80, 87);">
+                                            <option value="family">Family name (starts with)</option>
+                                            <option value="name">Name (any part)</option>
+                                            <option value="identifier">Identifier (exact)</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </form>
+                            <!-- The FHIRGrid Container, the animation for server fetches -->
+                            <div id="fhirGridContainer" style="visibility:visible;"></div>
+                            <div id="fhirGridContainerLoading" class="fadeInFadeOut" style="z-index: 999; visibility:visible; background-color:rgb(0, 140, 255); height:3px;"></div>
+                        </div>
+
+                        <!-- Medication -->
+                        <div class="tab-pane fade" id="sidebarNav-medications" aria-labelledby="sidebarNav-medications-tab" role="tabpanel">
+                            Medication content goes here
+                        </div>
+
+                        <!-- CDA Loader -->
+                        <div class="tab-pane fade" id="sidebarNav-cdaloader" aria-labelledby="sidebarNav-cdaloader-tab" role="tabpanel">
+                            <div id="drop-area-alert">Smile CDR FHIR server as of version 2022.02.R08 and newer supports the <a href="https://smilecdr.com/docs/configuration_categories/cda_import.html" target="_blank">$import-cda</a> operation. The <a id="drop-area-alert-href"
+                                    href="https://smilecdr.com/docs/configuration_categories/cda_import.html" target="_blank">CDA Exchange module</a> needs to be enabled.</div>
+                            <div id="drop-area" style="visibility: hidden;">
+                                <form class="my-form">
+                                    <p style="text-align:center;">Convert and upload CDA file(s)</p>
+                                    <input type="file" id="fileElem" multiple accept="text/xml,image/*" onchange="handleFiles(this.files)">
+                                    <label class="fileDropButton" for="fileElem">Select XML files</label>
+                                </form>
+                                <progress id="progress-bar" max=100 value=0 style="width: 100%;"></progress>
+                                <div id="gallery" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <!------------------------- END: Main Section -------------------------->
+                    <!---------------------------------------------------------------------->
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="footer" style="padding: 0px 0px 0px 0px;">
+            <div class="container-fluid">
+                <p class="copyright pull-right" style="padding-top: 0px;">
+                    Made with &#x1F525 Smile Digital Health
+                </p>
+            </div>
+        </footer>
+
+    </div>
+    </div>
+</body>
+
+
+<!--   Core JS Files   -->
+<script src="https://code.jquery.com/jquery-3.6.1.min.js" integrity="sha256-o88AwQnZB+VDvE9tvIXrMQaPlFFSUTR+nldQm1LuPXQ=" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-Fy6S3B9q64WdZWQUiU+q4/2Lc9npb8tCaSX9FK7E8HnRr0Jz8D6OP9dO5Vg3Q9ct" crossorigin="anonymous"></script>
+<!-- <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script> -->
+<script src="assets/js/material.min.js" type="text/javascript"></script>
+<script src="assets/js/perfect-scrollbar.jquery.min.js" type="text/javascript"></script>
+
+<!-- Material Dashboard javascript methods -->
+<script src="assets/js/material-dashboard.js?v=1.3.0"></script>
+
+<!-- FHIRPath -->
+<!-- <script src="assets/js/fhirpath.min.js"></script>
+<script src="assets/js/fhirpath.r4.min.js"></script> -->
+
+
+<!-- Javascript to be run only once the page is ready -->
+<script>
+    /*************** Global Data Parameters ***************/
+    let dataParams = {
+        servers: [{ //credentials: fill in if you wish (obviously INSECURE!!!), leave blank for anonymous, <PROMPT> to be prompted
+            "server": "http://localhost:8000/",
+            un: "admin",
+            pw: "password"
+        }, {
+            "server": "https://hapi.fhir.org/baseR4/",
+            un: "<anonymous>",
+            pw: ""
+        }, {
+            "server": "https://try.smilecdr.com/baseR4/",
+            un: "",
+            pw: ""
+        }],
+        baseURL: "",
+        baseCredentials: "",
+        args: {},
+        populations: {},
+    };
+    dataParams.baseURL = dataParams.servers[0].server;
+
+    let capabilityStatement = {};
+    let serverErr = "";
+
+    //Get the parameter value from the subsection first; otherwise get it from the root
+    getParam = (paramList, section, param) => {
+        return paramList[section][param] || paramList[param]
+    }
+
+
+    /*************** Page specific functions ***************/
+    //Build a HTML table from a list of name/value pairs
+    buildNameValTable = (list) => {
+        let str = `<table style="width: 100%">`;
+        for (let i = 0; i < Object.values(list).length; i++) {
+            str += `<tr style="${i == 0 ? "background-color: #6787D2;" : ""} vertical-align: top;"><td style="${i == 0 ? "color: #ffffff;" : ""} font-weight: bold; padding-right: 10px;">${Object.keys(list)[i]}</td>`;
+            str += `<td style="${i == 0 ? "color: #ffffff;" : ""}">${Object.values(list)[i]}</td></tr>`;
+        }
+        str += `</table>`;
+        return (str);
+    }
+
+    //Create a list of the $operations. Called by displayServerCapabilities
+    serverCapabilitiesOperations = (list) => {
+        let str = "";
+        for (let i = 0; i < list.length; i++) {
+            str += "$" + list[i]["name"] + (list[i]["documentation"] === undefined ? "" : `&nbsp;<div class="tooltip2"><img src='assets/img/info.png' width=20 height=20><span class="tooltiptext2">${list[i]["documentation"]}</span></div>`) + "<br>";
+        }
+        return str;
+    }
+
+    //Create a list of the Resources. Called by displayServerCapabilities
+    serverCapabilitiesResources = (list) => {
+        let str = "";
+        for (let i = 0; i < list.length; i++) {
+            str += `<span style="background: #6787D2; border-radius: 10px; color: #ffffff">&nbsp;${list[i]["type"]}&nbsp;</span>` + " ";
+        }
+        return str;
+    }
+
+    //Populate the server details
+    displayServerCapabilities = () => {
+        let d = document.getElementById("serverCapabilities");
+        let obj = {};
+        obj["Server"] = `<a href="${dataParams.baseURL}" target="_blank" style="color: #ffffff;">${dataParams.baseURL} <i class="material-icons" style="margin-right: 0px;">open_in_new</i></a>`;
+        obj["Credentials"] = `<form>username: <input id="serverCredsUN" type=text value="${FHIRRefByRef(dataParams.servers, "server", dataParams.baseURL, "un")}">
+            &nbsp; &nbsp; password: <input id="serverCredsPW" type=password value="${FHIRRefByRef(dataParams.servers, "server", dataParams.baseURL, "pw")}">
+            &nbsp; &nbsp; <input type="button" value="Use (this session, not saved)" onClick="updateServerCreds()"></form>`;
+        if (serverErr != "") {
+            obj["Error"] = "<img src='assets/img/error.png' height=20 width=20>&nbsp;" + serverErr + "<br>You are most likely seeing this error because the server is unreachable."
+        } else {
+            obj["FHIR&nbsp;Server"] = capabilityStatement["software"]["name"] + "<br>" + capabilityStatement["software"]["version"];
+            obj["FHIR&nbsp;Version"] = capabilityStatement["fhirVersion"];
+            obj["Operations"] = serverCapabilitiesOperations(capabilityStatement["rest"][0]["operation"]);
+            obj["Resources"] = serverCapabilitiesResources(capabilityStatement["rest"][0]["resource"]);
+        }
+        d.innerHTML = buildNameValTable(obj);
+        serverSpecifics();
+    }
+
+    //Update the server credentials when new username/password entered on the FHIR Server page
+    updateServerCreds = () => {
+        for (el of dataParams.servers) {
+            if (el.server == dataParams.baseURL) {
+                el.un = document.getElementById("serverCredsUN").value;
+                el.pw = document.getElementById("serverCredsPW").value;
+            }
+        }
+        dataParams.baseCredentials = btoa(`${FHIRRefByRef(dataParams.servers, "server", dataParams.baseURL, "un")}:${FHIRRefByRef(dataParams.servers, "server", dataParams.baseURL, "pw")}`);
+    }
+
+    //Modify the FHIR Explorer behavior based on the specific FHIR server. E.g. disable CDA Loader if the server doesn't support it.
+    serverSpecifics = () => {
+        dataParams.supportsImportCDA = ""
+        if (capabilityStatement !== undefined) {
+            dataParams.supportsImportCDA = FHIRRefByRef(capabilityStatement["rest"][0]["operation"], "name", "import-cda", "definition")
+        }
+        document.getElementById("drop-area").style.visibility = (dataParams.supportsImportCDA == "") ? "hidden" : "visible";
+        document.getElementById("drop-area-alert").style.visibility = (dataParams.supportsImportCDA == "") ? "visible" : "hidden";
+    }
+
+    //Find a name=value in a FHIR array, and return a given node within. (E.g. Find link["relation"]="next" and return the URL)
+    FHIRRefByRef = (ar, searchName, searchValue, getNode) => {
+        for (let i = 0; i < ar.length; i++) {
+            if (ar[i][searchName] == searchValue) {
+                return ar[i][getNode];
+                break;
+            }
+        }
+        return "";
+    }
+
+
+    /*************** Remote Server Operations (previously AJAX) ***************/
+    //async/await fetch (i.e. Promise AJAX)
+    async function loadResource(resURL) {
+        serverErr = "";
+        try {
+            const source = await fetch(resURL);
+            const data = await source.json();
+            return data;
+        } catch (error) {
+            console.log("err: ", error);
+            serverErr = error;
+        }
+    }
+
+    //change FHIR servers
+    changeServer = () => {
+        loadResource(dataParams.baseURL + "metadata").then(data => {
+            capabilityStatement = data;
+            displayServerCapabilities();
+        });
+        dataParams.baseCredentials = btoa(`${FHIRRefByRef(dataParams.servers, "server", dataParams.baseURL, "un")}:${FHIRRefByRef(dataParams.servers, "server", dataParams.baseURL, "pw")}`);
+    }
+
+
+    /*************** File Operations on the local drive ***************/
+    //Read a file which contains a list of patient files
+    getFileList = (fileName) => {
+        let file = document.querySelector(`#${fileName}File`).files[0];
+        if (file === undefined) {
+            document.querySelector(`#${fileName}Content`).innerHTML = "<span style='background-color: yellow;'>Looks like you forgot to <b>Choose File</b></span>";
+        } else {
+            getFile(file, processFileList, fileName);
+        }
+    }
+
+    //Read a text [file] from the local drive, then call [callback]
+    getFile = (file, callback, fileName) => {
+        let reader = new FileReader();
+        reader.addEventListener('load', function(e) {
+            let text = e.target.result;
+            callback(text, fileName)
+        });
+        reader.readAsText(file);
+    }
+
+    //This is the callback function for getFileList(). This reads each line of the file into an array.
+    processFileList = (fileContents, fileName) => {
+            fileContents = fileContents.split(/[\r\n]+/g); // tolerate both Windows and Unix linebreaks
+            document.querySelector(`#${fileName}Content`).textContent = fileContents.length + " records";
+            dataParams.populations[fileName] = JSON.parse(`{ "records": ${fileContents.length}, "list": [${fileContents.map(file => `"${file}"`)}] }`); //The map function encapsulates each row (file) in quotes
+        if (Object.keys(dataParams.populations).length >= 2) { document.querySelector("#sendFilesToServer").disabled = false }
+        console.log('To see contents, type: "> dataParams"');
+    }
+
+    //Get a directory handler, then capture all the file names in the directory
+    async function getDir(ptType) {
+        const dirHandle = await window.showDirectoryPicker();
+        dataParams.populations[ptType + "List"] = {};
+        dataParams.populations[ptType + "List"].dir = dirHandle;
+        // document.getElementById(ptType + "Dir").innerHTML = dataParams.populations[ptType + "List"].name;
+        getDirContents(ptType);
+    }
+
+    //Scan and store all the file names in a directory
+    async function getDirContents(ptType) {
+        dirHandle = dataParams.populations[ptType + "List"].dir;
+        dataParams.populations[ptType + "List"].list = [];
+        let filelist = dataParams.populations[ptType + "List"].list;
+        for await (const entry of dirHandle.values()) {
+            if (entry.kind === "file") {
+                const file = await entry.getFile();
+                filelist[filelist.length] = file;
+            }
+        }
+        document.getElementById(ptType + "Dir").innerHTML = dataParams.populations[ptType + "List"].dir.name + ` (${dataParams.populations[ptType + "List"].list.length} records)`;
+        if (Object.keys(dataParams.populations).length >= 2) { document.querySelector("#sendFilesToServer").disabled = false }
+    }
+
+    //Retrieve the contents of a file
+    function retrieveFileContents(fileref) {
+        let reader = new FileReader();
+        reader.addEventListener('load', function (e) {
+            let text = e.target.result;
+            return text;
+        });
+        reader.readAsText(fileref);
+    }
+
+
+    // ************************ Drag and drop file loader ***************** //
+    let uploadTotalFiles = 0;
+    let dropArea = document.getElementById("drop-area")
+
+        // Prevent default drag behaviors
+        ;['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropArea.addEventListener(eventName, preventDefaults, false)
+            document.body.addEventListener(eventName, preventDefaults, false)
+        })
+
+        // Highlight drop area when item is dragged over it
+        ;['dragenter', 'dragover'].forEach(eventName => {
+            dropArea.addEventListener(eventName, highlight, false)
+        })
+
+        ;['dragleave', 'drop'].forEach(eventName => {
+            dropArea.addEventListener(eventName, unhighlight, false)
+        })
+
+    // Handle dropped files
+    dropArea.addEventListener('drop', handleDrop, false)
+
+    function preventDefaults(e) {
+        e.preventDefault()
+        e.stopPropagation()
+    }
+
+    function highlight(e) {
+        dropArea.classList.add('highlight')
+    }
+
+    function unhighlight(e) {
+        dropArea.classList.remove('highlight')
+    }
+
+    function handleDrop(e) {
+        dropArea.classList.add('highlight2')
+        var dt = e.dataTransfer
+        var files = dt.files
+
+        handleFiles(files)
+    }
+
+    function handleFiles(files) {
+        files = [...files]
+        uploadTotalFiles = files.length;
+        files.forEach(uploadFile)
+        files.forEach(previewFile)
+    }
+
+    function previewFile(file) {
+        let base = (JSON.stringify(file.type)).match(/^(.*[\/])/)[0].replace(/[\/"]+/g, '');
+        let sub = (JSON.stringify(file.type)).match(/[^\/]+$/)[0].replace(/["]+/g, '');
+        let img = document.createElement('img')
+        switch (base) {
+            case "image":
+                let reader = new FileReader()
+                reader.readAsDataURL(file)
+                reader.onloadend = function () {
+                    img.src = reader.result
+                }
+                break;
+            case "text":
+                img.src = `assets/img/filetype-${sub}.png`;
+                break;
+            default:
+                img.src = `assets/img/filetype-other.png`;
+                break;
+        }
+        document.getElementById('gallery').appendChild(img)
+    }
+
+    //Encapsulate the XML document in a JSON template
+    addCDAWrapper = (contents, url) => {
+        contents = contents.replace(/\"/g, '\\"');          //escape double quotes
+        contents = contents.replace(/\t/g, '   ');          //replace tab with spaces
+        contents = contents.replace(/\r\n|\r|\n/g, '\\n');  //escape line breaks (Linux and PC)
+        let str = `{
+                        "resourceType": "Parameters",
+                        "parameter": [
+                            {
+                                "name": "document",
+                                "valueString": "${contents}"
+                            }
+                        ]
+                    }`
+        uploadFile2(str, url);
+    }
+
+    async function uploadFile2(contents, url) {
+        const rawResponse = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+                'Authorization': `Basic ${dataParams.baseCredentials}`
+            },
+            body: contents
+        });
+        const resp = await rawResponse.json();
+        console.log(resp);
+        document.getElementById('progress-bar').value = document.getElementById('progress-bar').value + (1 / uploadTotalFiles) * 100;
+        if (document.getElementById('progress-bar').value > 99.99) {
+            dropArea.classList.remove('highlight2');
+            dropArea.classList.add('highlight3');
+        }
+    }
+
+    function uploadFile(file, i) {
+        let server = dataParams.baseURL.match(/^(?:.*?(\/)){3}/gm);
+        let url = server + "$import-cda";
+        getFile(file, addCDAWrapper, url);
+        //End this function here due to async. (Control passed to callback: addCDAWrapper)
+    }
+
+
+    /*************** Generic utility functions ***************/
+    //Populate list of FHIR servers
+    addItemToSelect = (selectID, itemsAr) => {
+        let sel = document.getElementById(selectID);
+        itemsAr.forEach(element => {
+            opt = document.createElement("option");
+            opt.text = element;
+            sel.add(opt);
+        });
+    };
+    (() => {
+        let t = [];
+        for (const el of dataParams.servers) { t.push(el.server) }
+        addItemToSelect("FHIRServer", t);
+    })()
+
+    //OnWindowResize
+    function winResize() {
+        let h = document.getElementById("mainContentFrame").offsetHeight;
+        document.getElementById("aiTrainerFrame").style.height = (h - 20) + "px";
+    };
+    window.addEventListener("resize", winResize);
+
+    //OnPageReady functions
+    $(document).ready(function () {
+
+        // Change the main content DIV when the left Sidebar navigation button is changed
+        $('#sidebarNav a').on('click', function (e) {
+            // Update the Headerbar
+            let curTab = (e.currentTarget.id).substr(11);
+            curTab = curTab.substr(0, curTab.length - 4);
+            curTab = `FHIR Explorer <i class='material-icons'>keyboard_double_arrow_right</i>` + curTab.toUpperCase();
+            document.getElementById("HeaderbarTitle").innerHTML = curTab;
+            // Actually change the tab
+            e.preventDefault()
+            $(this).tab('show')
+        });
+
+        winResize();
+        changeServer();
+        
+
+        //Position the loading bar
+        // container = document.getElementById("fhirGridContainerLoading")
+        // container.style.position = "relative";
+        // container.style.top = `-${getParam(fhirGridParams, fhirGridParams.template, "height") - 31}px`;
+        // container.style.width = getParam(fhirGridParams, fhirGridParams.template, "width");
+    });
+
+    //Toggle the sidebar elements between sidebar-mini and sidebar-normal
+    function toggle_visibility(className) {
+        elements = document.getElementsByClassName(className);
+        for (var i = 0; i < elements.length; i++) {
+            elements[i].style.display = elements[i].style.display == 'inline' ? 'none' : 'inline';
+        }
+        document.body.style.display = "inline"; //After a few toggles, the Body element has the sidebar-mini class assigned. This line avoids the body from being hidden
+    }
+    $('#minimizeSidebar').click(function () {
+        toggle_visibility("sidebar-mini");
+        toggle_visibility("sidebar-normal");
+    });
+</script>
+
+</html>

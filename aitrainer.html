@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <title>PopSpinner &#x1F525 AI Trainer</title>
+
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+
+    <!-- Favicons -->
+    <link rel="apple-touch-icon" sizes="180x180" href="assets/favicon/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="assets/favicon/favicon-16x16.png">
+
+    <!-- CSS: Tabulator -->
+    <link href="https://unpkg.com/tabulator-tables@5.1.2/dist/css/tabulator.min.css" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: arial;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Add a row group -->
+    <label for="patientType">patient type:</label>
+    <input type="text" id="patientType" name="patientType" size="20" placeholder='Healthy'>
+    <button type="button" onClick="addPtTypeRow($('#patientType')[0].value)">Add patient type</button></br>
+    <!-- Add a column  -->
+    <label for="resourceType">Resource type:</label>
+    <select id="resourceType" name="resourceType">
+        <option value="Observation">Observation</option>
+    </select>
+    <input type="checkbox" id="resourceMeasureAsInt" name="resourceMeasureAsInt" checked><label for="resourceMeasureAsInt">Results as integer</label>,
+    <label for="resourceTitle">Title:</label><input type="text" id="resourceTitle" name="resourceTitle" size="20" placeholder='Body Temp'>,
+    <label for="resourceLoinc">LOINC:</label><input type="text" id="resourceLoinc" name="resourceLoinc" size="20" placeholder='8310-5'>,
+    <input type="text" id="resourceCode" name="resourceCode" size="80" placeholder='"code": {"text": "[|title|]"} "valueQuantity": {"value": [|val|], "unit": "F"}'>
+    <button type="button"
+        onClick="addMeasureCol( $('#resourceType')[0].value, $('#resourceMeasureAsInt')[0].checked, $('#resourceTitle')[0].value, $('#resourceLoinc')[0].value, $('#resourceCode')[0].value )">Add
+        measure</button></br>
+    <!-- (Note: use double-quotes not single-quotes, use "[||]" as encapsulation for variables: title, val, loinc</br> -->
+    <!-- Set generator population measureeters -->
+    <table cellspacing="1" cellpadding="1">
+        <tr style="background-color:#6ba6e1;">
+            <td>Number of patients</td>
+            <td>First non-healthy</td>
+            <td>Level off patient</td>
+            <td>Percent non-healthy (%)</td>
+        </tr>
+        <tr style="background-color:#c0abf4;">
+            <td><input type="text" id="patsNum" name="patsNum" value="100" style="text-align:right" /></td>
+            <td><input type="text" id="patsFirstNonHealthy" name="patsFirstNonHealthy" value="10" style="text-align:right" /></td>
+            <td><input type="text" id="patsLevelOff" name="patsLevelOff" value="80" style="text-align:right" /></td>
+            <td><input type="text" id="patsLevelOffPercent" name="patsLevelOffPercent" value="60" style="text-align:right" /></td>
+        </tr>
+    </table></br>
+
+    Data modelling parameters:
+    <button id="download-json">Generate</button>
+    <div id="definitionMatrix"></div></br>
+
+    Generated Data:
+    <div id="generatedData"></div>
+</body>
+
+<!--   Core JS Files   -->
+<script src="https://code.jquery.com/jquery-3.6.1.min.js" integrity="sha256-o88AwQnZB+VDvE9tvIXrMQaPlFFSUTR+nldQm1LuPXQ=" crossorigin="anonymous"></script>
+
+<!-- Tabulator (fhirGrid) -->
+<script type="text/javascript" src="https://unpkg.com/tabulator-tables@5.3.4/dist/js/tabulator.min.js"></script>
+
+<script type="text/javascript">
+    let defs;  //this will store the generator properties -- i.e. the table of cols:patientTypes-statistic(mean, SD,...), rows:measures(bodyTemp, systolic,..), and values
+
+    //In: The patient type and statistic(mean, SD,...), the measure(observation or other). Out: the value e.g. the value for healthy-mean:bodyTemp = 98.7
+    getDefsVal = (ptTypestatistic, measure) => {
+        //Get the object which contains the ptTypestatistic. (If ptTypestatistic is not found, then i will equal the array.length)
+        let i = 0;
+        while (i < defs.length) {
+            if (defs[i].ptTypeStatistic == ptTypestatistic) break;
+            i++;
+        }
+        //Get the value for the key-value pair for the specific measure
+        return i < defs.length ? defs[i][measure] : false;
+    }
+
+    //Randomize a number to a gaussian distribution (i.e. fit to a bell curve) using the Box-Muller Transformation
+    //   Recalculate any time the number is outside of the min..max range
+    //   returnInteger: FALSE = return a real number, TRUE = round to the nearest integer between [min..max]
+    randGaus = (mean, sd, min, max, returnInteger) => {
+        mean = isNaN(mean) ? 0 : mean;
+        sd = isNaN(sd) ? 1 : sd;
+        let legitValue = true;  // will be forced to false if the random number is outside of the min..max range
+        let x = Math.sqrt(-2 * Math.log(Math.random())) * Math.cos(2 * Math.PI * Math.random()) * sd + mean;
+        if (!isNaN(min) && x < min) legitValue = false;
+        if (!isNaN(max) && x > max) legitValue = false;
+        if (legitValue == false) x = randGaus(mean, sd, min, max);
+        if (!isNaN(returnInteger) && returnInteger == true) x = Math.round(x);
+        return x;
+    }
+
+    // Calculate probability of being ill
+    // !!!!!!!!! this function and the HTML table needs to be replaced with something that supports (a) multiple different patient types, and (b) multiple inflection points per patient type
+    generatePop = () => {
+        let illProb = 0;
+        let ptType = "";    //this will hold the patientType(healthy, covid19, HIV,...)
+        let measures = Object.keys(defs[0]);  //e.g. bodyTemp, systolic, hbA1c, primaryCarePhysician,...
+        let measureStartIndex = 3;  //ignore the first few columns in the table as they contain the patientType, Statistic, etc.; the remaining columns are the actual measures
+        let pfnh = $("#patsFirstNonHealthy")[0].value;
+        let plo = $("#patsLevelOff")[0].value;
+        let plop = $("#patsLevelOffPercent")[0].value;
+        let s = "";
+        let t = "";
+        let v = 0;
+        for (var i = measureStartIndex; i < measures.length; i++) { s += `<td>${measures[i]}</td>` }
+        s = `<table border=1><tr><td>Pt #</td><td>ill Prob</td><td>Pt Type</td>${s}</tr>`;
+        for (var i = 0; i < $("#patsNum")[0].value; i++) {  // loop1 - for each patient
+            if (i >= pfnh) {
+                if (i < plo) {
+                    illProb = (plop / 100) * (i - pfnh) / (plo - pfnh)
+                } else {
+                    illProb = plop / 100;
+                }
+            } else {
+                illProb = 0;
+            }
+            illPat = Math.random() > illProb ? 0 : 1;
+            //Model the individual patient
+            ptType = illPat ? "covid19mild" : "healthy";
+            t = "";
+            for (var j = measureStartIndex; j < measures.length; j++) {   // loop2 - for each measure
+                v = randGaus(getDefsVal(ptType + "-mean", measures[j]), getDefsVal(ptType + "-sd", measures[j]), getDefsVal(ptType + "-min", measures[j]), getDefsVal(ptType + "-max", measures[j]), getDefsVal("Integer_Result", measures[j]));
+                t += `<td>${v}</td>`;
+            }
+            s += `<tr><td>${i}</td><td>${illProb}</td><td>${illPat ? "ill" : "healthy"}</td>${t}</tr>`;
+            $("#generatedData")[0].innerHTML = s + "</table>";
+        }
+    }
+
+    //The "Add Patient Type" button has been pressed --> Add rows to the table, one for each measure(mean, SD, min, max)
+    addPtTypeRow = (val) => {
+        if (val.length <= 0) { alert("Let's try entering something for Patient Type") } else {
+            if (table.searchRows("patientType", "=", val).length > 0) { alert("Please use a unique name for each Patient Type") } else {
+                let measures = ["mean", "sd", "min", "max",];
+                for (var i = 0; i < measures.length; i++) {
+                    table.addData([{ patientType: val, stat: measures[i], ptTypeStatistic: `${val}-${measures[i]}` }], false);
+                }
+            }
+        }
+    }
+
+    //The "Add Measure" button has been pressed --> Add a column to the table for the new measure
+    addMeasureCol = (resType, asInt, resTitle, resLoinc, resCode) => {
+        let colName = resTitle.replace(/[^a-zA-Z0-9]/g, "");
+        table.addColumn({ field: colName, title: resTitle, editor: "number", headerSort: false, editable: editCheck, minWidth: 120 });
+        //Fill in values for the rows in the Measure Summary group
+        let ar = [];
+        let obj = {};
+        let rows = [resType, asInt, resLoinc];
+        let i = 1;
+        rows.forEach(element => {
+            obj = { "id": i, };
+            obj[colName] = element;
+            ar.push(obj);
+            i++;
+        });
+        table.updateData(ar);
+    }
+
+
+
+
+    //************************** START: TABULATOR *********************************
+    //check if the cell should be editable. This function must be defined before the table.column definitions
+    var editCheck = function (cell) {
+        //cell - the cell component for the editable cell
+        return cell.getRow().getData()["patientType"] == "Measure Summary" ? false : true;  //Block "Measure Summary" rows from being edited (as the column editors are numeric)
+    }
+    //define data array
+    var defMatrixData = [
+        { id: 1, patientType: "Measure Summary", stat: "Resource type", ptTypeStatistic: "Resource type", bodyTemp: "Observation", systolic: "Observation" },
+        { id: 2, patientType: "Measure Summary", stat: "Integer_Result", ptTypeStatistic: "Integer_Result", bodyTemp: false, systolic: true },
+        { id: 3, patientType: "Measure Summary", stat: "LOINC", ptTypeStatistic: "LOINC", bodyTemp: "8310-5", systolic: "8480-6" },
+        { patientType: "healthy", stat: "mean", ptTypeStatistic: "healthy-mean", bodyTemp: 98.25, systolic: 120 },
+        { patientType: "healthy", stat: "sd", ptTypeStatistic: "healthy-sd", bodyTemp: 0.25, systolic: 10 },
+        { patientType: "healthy", stat: "min", ptTypeStatistic: "healthy-min", bodyTemp: 97.5, systolic: 90 },
+        { patientType: "healthy", stat: "max", ptTypeStatistic: "healthy-max", bodyTemp: 99, systolic: 150 },
+        { patientType: "covid19mild", stat: "mean", ptTypeStatistic: "covid19mild-mean", bodyTemp: 101, systolic: 125 },
+        { patientType: "covid19mild", stat: "sd", ptTypeStatistic: "covid19mild-sd", bodyTemp: 2, systolic: 25 },
+        { patientType: "covid19mild", stat: "min", ptTypeStatistic: "covid19mild-min", bodyTemp: 98, systolic: 100 },
+        { patientType: "covid19mild", stat: "max", ptTypeStatistic: "covid19mild-max", bodyTemp: 105, systolic: 200 },
+    ];
+    //initialize table
+    var table = new Tabulator("#definitionMatrix", {
+        height: "350px",
+        data: defMatrixData,
+        groupBy: "patientType",
+        columns: [
+            { field: "patientType", title: "Patient Type", visible: false },
+            { field: "ptTypeStatistic", title: "ptType_stat", visible: false },
+            { field: "stat", title: "statistic", headerSort: false },
+            { field: "bodyTemp", title: "bodyTemp", editor: "number", headerSort: false, editable: editCheck, minWidth: 120 },
+            { field: "systolic", title: "systolic", editor: "number", headerSort: false, editable: editCheck, minWidth: 120 },
+        ],
+        groupHeader: function (value, count, data, group) {
+            //value - the value all members of this group share
+            //count - the number of rows in this group
+            //data - an array of all the row data objects in this group
+            //group - the group component for the group
+            return value == "Measure Summary" ? value : "Patient type: <span style='font-weight: bold'>" + value + "</span>";
+        },
+        groupToggleElement: "header", //toggle group on click anywhere in the group header
+        downloadEncoder: function (fileContents, mimeType) {
+            //fileContents - the unencoded contents of the file
+            //mimeType - the suggested mime type for the output
+            defs = table.getData(); // defs = JSON.parse(fileContents);
+            console.log(defs);
+            generatePop();
+            return false; //new Blob([fileContents], { type: mimeType }); //must return a blob to proceed with the download, return false to abort download
+        },
+    });
+    document.getElementById("download-json").addEventListener("click", function () {
+        table.download("json", "data.json");
+    });
+    //************************** end: tabulator *********************************
+
+</script>
+
+
+</html>

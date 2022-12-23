@@ -168,16 +168,11 @@
                                     <select class="serverSelect" id="FHIRServer" onChange="fhirGridParams.baseURL=this.value; loadPatientsInit('')">
                                         <option>https://hapi.fhir.org/baseR4/</option>
                                         <option>https://try.smilecdr.com/baseR4/</option>
-                                        <option>https://conference.smilecdr.com/gateway/</option>
-                                        <option>https://conference.smilecdr.com/fhir-request/</option> 
+                                        <option>https://localhost:8000/</option>
                                     </select>
                                 </div>
                             </div>
                         </form>
-                        <a class="nav-link" href="#">
-                            <i class="material-icons">notifications</i>
-                            <span class="notification" style="position: relative; top: -30px; left: 12px;">3</span>
-                        </a>
                     </div>
                 </div>
             </nav>
@@ -216,6 +211,7 @@
 
                         <!-- Patient -->
                         <div class="tab-pane fade" id="sidebarNav-patient" aria-labelledby="sidebarNav-patient-tab" role="tabpanel">
+                            <!-- Patient header: name, ID, alert box, WebSocketConsole -->
                             <div id="Patient-patientNameHeader"></div>
                             <a href="https://conference.smilecdr.com/smart-apps/gallery/#/home" target="_blank">
                                 <div id="Patient-alert" class="alert alert-warning" role="alert" style="padding:10px; visibility: hidden; text-align: center;"></div>
@@ -230,56 +226,176 @@
                                     Listening
                                 </div>
                             </div>
-                        </div>
+                            <!-- Patient demographics form -->
 
-                        <!-- Medications -->
-                        <div class="tab-pane fade" id="sidebarNav-medications" aria-labelledby="sidebarNav-medications-tab" role="tabpanel">
-                            Sample medication profile, including adherenace scores
-                            <div id="visualization"></div>
-                        </div>
+                            <div class="content">
+                                <div class="container-fluid">
+                                    <div class="row">
 
-                        <!-- Resource Viewer -->
-                        <div class="tab-pane fade" id="sidebarNav-resourceViewer" aria-labelledby="sidebarNav-resourceViewer-tab" role="tabpanel">
-                            Resource Viewer<br>
-                            <input id="autoComplete">
-                            <input type="checkbox" id="deepSearchCheckbox" onchange="deepSearch = this.checked; autoCompleteJS.start();">
-                            <label for="deepSearch">Deep Search (phonetic match across all names)</label><br>
+                                        <div class="col-md-8">
+                                            <div class="card">
+                                                <div class="card-header card-header-icon" data-background-color="blue">
+                                                    <i class="material-icons">perm_identity</i>
+                                                </div>
+                                                <div class="card-content">
+                                                    <h4 class="card-title">Edit Profile - <small class="category">Complete your profile</small></h4>
 
+                                                    <form>
+                                                        <div class="row">
+                                                            <div class="col-md-5">
+                                                                <div class="form-group label-floating">
+                                                                    <label class="control-label">Company (disabled)</label>
+                                                                    <input type="text" class="form-control" disabled>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-md-3">
+                                                                <div class="form-group label-floating">
+                                                                    <label class="control-label">Username</label>
+                                                                    <input type="text" class="form-control">
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-md-4">
+                                                                <div class="form-group label-floating">
+                                                                    <label class="control-label">Email address</label>
+                                                                    <input type="email" class="form-control">
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+                                                        <div class="row">
+                                                            <div class="col-md-6">
+                                                                <div class="form-group label-floating">
+                                                                    <label class="control-label">Fist Name</label>
+                                                                    <input type="text" class="form-control">
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-md-6">
+                                                                <div class="form-group label-floating">
+                                                                    <label class="control-label">Last Name</label>
+                                                                    <input type="text" class="form-control">
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+                                                        <div class="row">
+                                                            <div class="col-md-12">
+                                                                <div class="form-group label-floating">
+                                                                    <label class="control-label">Adress</label>
+                                                                    <input type="text" class="form-control">
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+                                                        <div class="row">
+                                                            <div class="col-md-4">
+                                                                <div class="form-group label-floating">
+                                                                    <label class="control-label">City</label>
+                                                                    <input type="text" class="form-control">
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-md-4">
+                                                                <div class="form-group label-floating">
+                                                                    <label class="control-label">Country</label>
+                                                                    <input type="text" class="form-control">
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-md-4">
+                                                                <div class="form-group label-floating">
+                                                                    <label class="control-label">Postal Code</label>
+                                                                    <input type="text" class="form-control">
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+                                                        <div class="row">
+                                                            <div class="col-md-12">
+                                                                <div class="form-group">
+                                                                    <label>About Me</label>
+                                                                    <div class="form-group label-floating">
+                                                                        <label class="control-label"> sample text</label>
+                                                                        <textarea class="form-control" rows="5"></textarea>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+                                                        <button type="submit" class="btn btn-info pull-right">Update Patient File</button>
+                                                        <div class="clearfix"></div>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-4" style="top:-5px">
+                                            <div class="card card-profile">
+
+                                                <div class="card-content" style="text-align: left; overflow-y: auto;">
+                                                    <h6 class="category text-black">Clinical Summary</h6>
+                                                    <p class="description">
+                                                        Patient is recently (today) identified as being at risk of CKD. Hx of Obesity, T2D,...
+                                                    </p>
+                                                    <h6 class="category text-black">Active Conditions</h6>
+                                                    <ul>
+                                                        <li>item 1</li>
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+
+
+
+                                </div>
+
+                                <!-- Medications -->
+                                <div class="tab-pane fade" id="sidebarNav-medications" aria-labelledby="sidebarNav-medications-tab" role="tabpanel">
+                                    Sample medication profile, including adherenace scores
+                                    <div id="visualization"></div>
+                                </div>
+
+                                <!-- Resource Viewer -->
+                                <div class="tab-pane fade" id="sidebarNav-resourceViewer" aria-labelledby="sidebarNav-resourceViewer-tab" role="tabpanel">
+                                    Resource Viewer<br>
+                                    <input id="autoComplete">
+                                    <input type="checkbox" id="deepSearchCheckbox" onchange="deepSearch = this.checked; autoCompleteJS.start();">
+                                    <label for="deepSearch">Deep Search (phonetic match across all names)</label><br>
+
+                                </div>
+                            </div>
+
+
+                            <!------------------------- END: Main Section -------------------------->
+                            <!---------------------------------------------------------------------->
                         </div>
                     </div>
 
-
-                    <!------------------------- END: Main Section -------------------------->
-                    <!---------------------------------------------------------------------->
-                </div>
-            </div>
-
-            <!-- Footer -->
-            <footer class="footer">
-                <div class="container-fluid">
-                    <nav class="pull-left">
-                        <ul>
-                            <li>
-                                <a href="mailto:adam@smilecdr.com" style="padding-top: 13px; padding-bottom: 0px;">
+                    <!-- Footer -->
+                    <footer class="footer">
+                        <div class="container-fluid">
+                            <nav class="pull-left">
+                                <ul>
+                                    <li>
+                                        <a href="mailto:adam@smilecdr.com" style="padding-top: 13px; padding-bottom: 0px;">
                                     adam@smilecdr.com
                                 </a>
-                            </li>
-                            <li>
-                                <a href="https://www.smilecdr.com" style="padding-top: 13px; padding-bottom: 0px;">
+                                    </li>
+                                    <li>
+                                        <a href="https://www.smilecdr.com" style="padding-top: 13px; padding-bottom: 0px;">
                                     Smile CDR
                                 </a>
-                            </li>
-                        </ul>
-                    </nav>
-                    <p class="copyright pull-right" style="padding-top: 13px; padding-bottom: 0px;">
-                        Made with &#x1F525 Adam Cole
-                    </p>
+                                    </li>
+                                </ul>
+                            </nav>
+                            <p class="copyright pull-right" style="padding-top: 13px; padding-bottom: 0px;">
+                                Made with &#x1F525 Adam Cole
+                            </p>
+                        </div>
+                    </footer>
+
                 </div>
-            </footer>
 
-        </div>
-
-    </div>
+            </div>
 </body>
 
 
@@ -497,7 +613,7 @@
         }
     });
 
-    //Add a listener for selecting a row in the fhirGrid
+    //Add a listener for selecting a row in the fhirGrid --> Change to the Patient tab and display the "WebSocket Console"
     fhirGrid.on("rowClick", function(e, row) {
         fhirGridParams.resID = row.getData()[getParam(fhirGridParams, fhirGridParams.template, "id")];
         // document.getElementById("webSocketConsoleTitle").innerHTML = "Websocket console";
@@ -536,7 +652,6 @@
             fhirGridParams.lastObs = maxTs;
         });
     }
-
 
     //OnPageReady functions
     $(document).ready(function() {
