@@ -1,10 +1,10 @@
-var items = new vis.DataSet({
+var mtItems = new vis.DataSet({
     type: {
         start: 'ISODate',
         end: 'ISODate'
     }
 });
-var groups = new vis.DataSet();
+var mtGroups = new vis.DataSet();
 
 var newGroupData = []; //One group on the timeline per molecule
 var newItemData = []; //each item (refill) on the timeline
@@ -175,7 +175,7 @@ for (i in medHx.meds) {
         type: 'background'
     });
 }
-groups.add(newGroupData);
+mtGroups.add(newGroupData);
 
 //Add shaded backgrounds for the months
 for (var y = rangeSD.getFullYear(); y <= rangeED.getFullYear(); y++) {
@@ -197,11 +197,11 @@ for (var y = rangeSD.getFullYear(); y <= rangeED.getFullYear(); y++) {
         }
     }
 }
-items.add(newItemData);
+mtItems.add(newItemData);
 
 //Add the timeline to the DOM and set any relevant configuration parameters
-var container = document.getElementById('visualization');
-var options = {
+var mtContainer = document.getElementById('medTimelineContainer');
+var mtOptions = {
     // orientation:'top'
     // start: '2013-01-01',
     // end: '2015-04-31',
@@ -210,17 +210,18 @@ var options = {
     stack: false,
     stackSubgroups: true
 };
-var timeline = new vis.Timeline(container, items, groups, options);
+var timeline = new vis.Timeline(mtContainer, mtItems, mtGroups, mtOptions);
 
-
+/*
 //This is future functionality I would like to add...
 function insertToggle(id, leftText, rightText) {
     var s = "<table><tr><td onclick='tgl_" + id + ".checked=false' style='cursor: pointer;'>" + leftText + "</td><td><input type='checkbox' id='tgl_" + id + "' class='cbx hidden'/>";
     s += "<label for='tgl_" + id + "' class='lbl'></label></td><td onclick='tgl_" + id + ".checked=true' style='cursor: pointer;'>" + rightText + "</td></tr></table>";
     document.writeln(s);
 }
+*/
 
-
+/*
 //HTTP Fetch() - a.k.a. AJAX
 function queryFHIR(qry) {
     var myHeaders = new Headers();
@@ -258,3 +259,4 @@ function queryFHIR(qry) {
 }
 
 queryFHIR("https://try.smilecdr.com/baseR4/MedicationStatement?patient=3908&status=active&_include=MedicationStatement:medication");
+*/
