@@ -24,6 +24,9 @@
     <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Material+Icons" />
     <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 
+    <!-- CSS: Tabulator -->
+    <link href="https://unpkg.com/tabulator-tables@5.4.3/dist/css/tabulator.min.css" rel="stylesheet">
+
     <style>
         /* Override the default blue of "pill" links */
         
@@ -166,29 +169,29 @@
 
                 <!--Navbar list-->
                 <div class="nav flex-column nav-pills" id="sidebarNav" role="tablist" aria-orientation="vertical">
-                    <a class="nav-link text-white active" id="sidebarNav-server-tab" data-toggle="pill" href="#sidebarNav-server" role="tab" aria-controls="sidebarNav-profile" aria-selected="false">
+                    <a class="nav-link text-white active" style="padding: 8px;" id="sidebarNav-server-tab" data-toggle="pill" href="#sidebarNav-server" role="tab" aria-controls="sidebarNav-profile" aria-selected="false">
                         <i class="bi bi-pc" style="margin-right: 0px;"></i>
                         <span class="sidebar-mini" style="display: none;">FS</span>
                         <span class="sidebar-normal" style="display: inline;">FHIR Server</span>
                     </a>
-                    <a class="nav-link text-white" id="sidebarNav-otics-tab" data-toggle="pill" href="#sidebarNav-otics" role="tab" aria-controls="sidebarNav-profile" aria-selected="false">
+                    <a class="nav-link text-white" style="padding: 8px;" id="sidebarNav-otics-tab" data-toggle="pill" href="#sidebarNav-otics" role="tab" aria-controls="sidebarNav-profile" aria-selected="false">
                         <i class="material-icons" style="margin-right: 0px;">psychology</i>
                         <span class="sidebar-mini" style="display: none;">AI</span>
                         <span class="sidebar-normal" style="display: inline;">AI Training Data</span>
                     </a>
-                    <a class="nav-link text-white" id="sidebarNav-patient-tab" data-toggle="pill" href="#sidebarNav-patient" role="tab" aria-controls="sidebarNav-profile" aria-selected="false">
+                    <a class="nav-link text-white" style="padding: 8px;" id="sidebarNav-patient-tab" data-toggle="pill" href="#sidebarNav-patient" role="tab" aria-controls="sidebarNav-profile" aria-selected="false">
                         <i class="material-icons" style="margin-right: 0px;">person_search</i>
                         <span class="sidebar-mini" style="display: none;">Pt</span>
                         <span class="sidebar-normal" style="display: inline;">Patients</span>
                     </a>
-                    <a class="nav-link text-white" id="sidebarNav-medications-tab" data-toggle="pill" href="#sidebarNav-medications" role="tab" aria-controls="sidebarNav-messages" aria-selected="false">
+                    <a class="nav-link text-white" style="padding: 8px;" id="sidebarNav-medications-tab" data-toggle="pill" href="#sidebarNav-medications" role="tab" aria-controls="sidebarNav-messages" aria-selected="false">
                         <i class="material-icons" style="margin-right: 0px;">medication</i>
                         <span class="sidebar-mini" style="display: none;">Rx</span>
                         <span class="sidebar-normal" style="display: inline;">Medications</span>
                     </a>
-                    <a class="nav-link text-white" id="sidebarNav-cdaloader-tab" data-toggle="pill" href="#sidebarNav-cdaloader" role="tab" aria-controls="sidebarNav-messages" aria-selected="false">
+                    <a class="nav-link text-white" style="padding: 8px;" id="sidebarNav-cdaloader-tab" data-toggle="pill" href="#sidebarNav-cdaloader" role="tab" aria-controls="sidebarNav-messages" aria-selected="false">
                         <i class="material-icons" style="margin-right: 0px;">upload_file</i>
-                        <span class="sidebar-mini" style="display: none;">CDA</span>
+                        <span class="sidebar-mini" style="display: none;">CX</span>
                         <span class="sidebar-normal" style="display: inline;">CDA Loader</span>
                     </a>
                     </ul>
@@ -273,6 +276,8 @@
                             <!-- The FHIRGrid Container, the animation for server fetches -->
                             <div id="fhirGridContainer" style="visibility:visible;"></div>
                             <div id="fhirGridContainerLoading" class="fadeInFadeOut" style="z-index: 999; visibility:visible; background-color:rgb(0, 140, 255); height:3px;"></div>
+                            <!-- The placeholder while data is loading / no results found -->
+                            <div id="fhirGridPlaceholder" style="text-align: center; font-size: 18px; color: #d0d0d0; font-weight:bold;">Fetching some data...<br><span style="font-size: 14px; font-weight: 400;">The initial load may take some time while the server warms up.</span></div>
                         </div>
 
                         <!-- Medication -->
@@ -305,7 +310,7 @@
         <!-- Footer -->
         <footer class="footer" style="padding: 0px 0px 0px 0px;">
             <div class="container-fluid">
-                <p class="copyright pull-right" style="padding-top: 0px;">
+                <p class="copyright pull-right" style="padding-top: 0px; padding-bottom: 0px;">
                     Made with &#x1F525 Smile Digital Health
                 </p>
             </div>
@@ -319,16 +324,18 @@
 <!--   Core JS Files   -->
 <script src="https://code.jquery.com/jquery-3.6.1.min.js" integrity="sha256-o88AwQnZB+VDvE9tvIXrMQaPlFFSUTR+nldQm1LuPXQ=" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-Fy6S3B9q64WdZWQUiU+q4/2Lc9npb8tCaSX9FK7E8HnRr0Jz8D6OP9dO5Vg3Q9ct" crossorigin="anonymous"></script>
-<!-- <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script> -->
 <script src="assets/js/material.min.js" type="text/javascript"></script>
 <script src="assets/js/perfect-scrollbar.jquery.min.js" type="text/javascript"></script>
 
+<!-- Tabulator (fhirGrid) -->
+<script type="text/javascript" src="https://unpkg.com/tabulator-tables@5.4.3/dist/js/tabulator.min.js"></script>
+
+<!-- FHIRPath (dependency of fhirGrid)-->
+<script src="assets/js/fhirpath.min.js"></script>
+<script src="assets/js/fhirpath.r4.min.js"></script>
+
 <!-- Material Dashboard javascript methods -->
 <script src="assets/js/material-dashboard.js?v=1.3.0"></script>
-
-<!-- FHIRPath -->
-<!-- <script src="assets/js/fhirpath.min.js"></script>
-<script src="assets/js/fhirpath.r4.min.js"></script> -->
 
 
 <!-- Javascript to be run only once the page is ready -->
@@ -341,7 +348,7 @@
             pw: "password"
         }, {
             "server": "https://hapi.fhir.org/baseR4/",
-            un: "<anonymous>",
+            un: "",
             pw: ""
         }, {
             "server": "https://try.smilecdr.com/baseR4/",
@@ -463,11 +470,15 @@
 
     //change FHIR servers
     changeServer = () => {
+        //Update the Capabilities object
         loadResource(dataParams.baseURL + "metadata").then(data => {
             capabilityStatement = data;
             displayServerCapabilities();
         });
+        //Update the credentials
         dataParams.baseCredentials = btoa(`${FHIRRefByRef(dataParams.servers, "server", dataParams.baseURL, "un")}:${FHIRRefByRef(dataParams.servers, "server", dataParams.baseURL, "pw")}`);
+        //Update the fhirGrid
+        loadPatientsInit(document.getElementById("patientFilter").value);
     }
 
 
@@ -506,7 +517,6 @@
         const dirHandle = await window.showDirectoryPicker();
         dataParams.populations[ptType + "List"] = {};
         dataParams.populations[ptType + "List"].dir = dirHandle;
-        // document.getElementById(ptType + "Dir").innerHTML = dataParams.populations[ptType + "List"].name;
         getDirContents(ptType);
     }
 
@@ -608,7 +618,7 @@
         document.getElementById('gallery').appendChild(img)
     }
 
-    //Encapsulate the XML document in a JSON template
+    //Encapsulate the XML (CDA) document in a JSON template
     addCDAWrapper = (contents, url) => {
         contents = contents.replace(/\"/g, '\\"');          //escape double quotes
         contents = contents.replace(/\t/g, '   ');          //replace tab with spaces
@@ -625,6 +635,7 @@
         uploadFile2(str, url);
     }
 
+    //Send the CDA document to the server (dependency of uploadFile)
     async function uploadFile2(contents, url) {
         const rawResponse = await fetch(url, {
             method: 'POST',
@@ -644,11 +655,172 @@
         }
     }
 
+    //Send the CDA document to the server 
     function uploadFile(file, i) {
         let server = dataParams.baseURL.match(/^(?:.*?(\/)){3}/gm);
         let url = server + "$import-cda";
         getFile(file, addCDAWrapper, url);
         //End this function here due to async. (Control passed to callback: addCDAWrapper)
+    }
+
+
+    /*************** FHIRGrid Specific functions ***************/
+    //FHIRGrid Global variables. Global variables followed by templates (parameter collection) for different grid
+    let fhirGridParams = {
+        template: "patient", //Which of the templates below (within this fhirGridParams block) should be used.
+        pageURL: "", // Place holder for the URL of the next page (for lazy loading)
+        resID: "", //Place holder for the selected row ID
+        resIdentifierValue: "", //Place holder for the selected row ID
+        resIdentifierSystem: "", //Place holder for the selected row ID
+        loadDelay: 0, // Delay time between grabbing the pages
+        height: 400,
+        width: 300,
+        elements: "", //"identifier,name", //CSV of the resource elements to return from the server
+        patient: {
+            id: "id", //When a row is clicked, this is the value that will be saved to fhirGridParams.resID
+            resource: "Patient", //The FHIR Resoruce to be searched
+            //The columns to display in the fhirGrid
+            cols: [{
+                title: "id",
+                field: "id",
+                visible: false,
+            }, {
+                title: "Last name",
+                field: "lname",
+                width: "200",
+                resizable: true,
+                headerSort: true,
+            }, {
+                title: "Given name",
+                field: "given",
+                resizable: true,
+                headerSort: true,
+            }, {
+                title: "Birthdate",
+                field: "dob",
+                resizable: true,
+                headerSort: true,
+            }, {
+                title: "Identifier",
+                field: "identifier",
+                resizable: true,
+                headerSort: false,
+            }],
+        },
+    }
+
+    //Add a listener for key press on the search box
+    $('#' + "patientFilter").keyup(keypressDelay(function (e) {
+        loadPatientsInit(this.value)
+    }, 500));
+
+    //Wait for a small delay while typing in the search box before calling the server
+    function keypressDelay(fn, ms) {
+        let timer = 0
+        return function (...args) {
+            clearTimeout(timer)
+            timer = setTimeout(fn.bind(this, ...args), ms || 0)
+        }
+    }
+
+    //Convert the result Bundle into a flat array that can be used by Tabulator
+    autoCompleteFHIRToArray = (data) => {
+        let res = {} //The current Resource within the Bundle returned from the server
+        let el = {} //The constructor element. A single resource transformed into a single row (element)
+        let ar = [] //The constuctor array. All the resources in the page to be appended (lazy load) to the fhirGrid
+        for (let key in data.entry) {
+            res = data.entry[key].resource
+            try {
+                let identifier = JSON.stringify(fhirpath.evaluate(res, "Patient.identifier.type.coding.code.first() | ' (' + Patient.identifier.system.first() + '): ' | Patient.identifier.value.first() | ', others: [' + Patient.identifier.value.tail() + ']'"))
+                identifier = identifier.replace(/\[\"/, "").replace(/\"\]/, "").replace(/\[\]/, "").replace(/\"\,\"/g, " ");
+                el = {
+                    "id": res.id,
+                    "lname": res.name[0].family,
+                    "given": res.name[0].given.join(" "),
+                    "full": res.name[0].family + ", " + res.name[0].given.join(" ") || "",
+                    "dob": res.birthDate,
+                    "identifier": identifier
+                };
+                ar.push(el);
+            } catch { }
+        }
+        return ar
+    }
+
+    //Reset the data in the dropdown Table and start a new query
+    loadPatientsInit = (query) => {
+        let q = "";
+        switch (document.getElementById("patientFilterField").value) {
+            case "family":
+                q = "family=";
+                break;
+            case "name":
+                q = "phonetic=";
+                break;
+            case "identifier":
+                q = "identifier=";
+                break;
+        }
+        let api = dataParams.baseURL +
+            getParam(fhirGridParams, fhirGridParams.template, "resource") + "?" +
+            "_elements=" + getParam(fhirGridParams, fhirGridParams.template, "elements") +
+            (query == "" ? "" :
+                "&" + q + query
+            );
+        loadPatients(api, typeof fhirGrid != "undefined");
+    }
+
+    //Construct the fhirGridContainer
+    var fhirGrid = new Tabulator("#fhirGridContainer", {
+        autoColumns: true,
+        height: getParam(fhirGridParams, fhirGridParams.template, "height"),
+        layout: "fitDataStretch",
+        placeholder: document.getElementById("fhirGridPlaceholder"),
+        placeholderEmpty: "Sorry, Eh. No results found.",
+        columns: getParam(fhirGridParams, fhirGridParams.template, "cols"),
+    });
+
+    //Lazy load (grab next page on vertical scroll)
+    fhirGrid.on("scrollVertical", function (top) {
+        // Add a small delay between lazy load attempts
+        if (fhirGridParams.loadDelay == 0) {
+            fhirGridParams.loadDelay = new Date().getTime();
+            console.log("Note: a fetch 'err:' may appear below. Ignore this error, it is due to scrolling triggering rapid pagination.")
+            loadPatients(fhirGridParams.pageURL);
+        } else {
+            // Add small delay before loading next page. (Even so, the server may still not be ready and throw an error. That's OK, just keep trying every 500ms)
+            if ((new Date().getTime() - fhirGridParams.loadDelay) > 500) fhirGridParams.loadDelay = 0;
+        }
+    });
+
+    //Add a listener for selecting a row in the fhirGrid --> Change to the Patient tab and display the "WebSocket Console"
+    fhirGrid.on("rowClick", function (e, row) {
+        fhirGridParams.resID = row.getData()[getParam(fhirGridParams, fhirGridParams.template, "id")];
+        // document.getElementById("webSocketConsoleTitle").innerHTML = "Websocket console";
+        document.getElementById("webSocketConsole").innerHTML = `Resource: ${fhirGridParams.resID}<br><span>Listening</span><span class="fadeInFadeOutFast" style="font-size: 10px;"><i class="bi bi-file-fill"></i></span>`;
+        document.getElementById("webSocketConsoleContainer").style.visibility = "visible";
+        setInterval(pollServer, 3000);
+        document.getElementById("Patient-patientNameHeader").innerHTML = `<b>${row.getData()["full"]}</b> [ID:${fhirGridParams.resID}]`;
+        $('#sidebarNav-patient-tab').tab('show');
+    });
+
+    //async/await fetch (i.e. Promise AJAX)
+    async function loadPatients(api, clearData) {
+        try {
+            document.getElementById("fhirGridContainerLoading").style.visibility = "visible";
+            let fetchHeaders = new Headers();
+            if (dataParams.baseCredentials != "Og==") { fetchHeaders.append("Authorization", `Basic ${dataParams.baseCredentials}`) }   //"Og==" is base64 encoding of anonymous credentials
+            const source = await fetch(api, { headers: fetchHeaders });
+            const data = await source.json();
+            if (clearData) fhirGrid.clearData();
+            fhirGridParams.pageURL = FHIRRefByRef(data.link, "relation", "next", "url").replace(/http:/, "https:");
+            fhirGrid.addData(autoCompleteFHIRToArray(data));
+            if (data.entry === undefined) { document.getElementById("fhirGridPlaceholder").innerHTML = "Sorry eh, no matching data found."; }
+            document.getElementById("fhirGridContainerLoading").style.visibility = "hidden";
+        } catch (error) {
+            console.log("err: ", error);
+            document.getElementById("fhirGridContainerLoading").style.visibility = "hidden";
+        }
     }
 
 
@@ -690,15 +862,15 @@
             $(this).tab('show')
         });
 
+        //Position the loading bar
+        container = document.getElementById("fhirGridContainerLoading")
+        container.style.position = "relative";
+        container.style.top = `-${getParam(fhirGridParams, fhirGridParams.template, "height") - 31}px`;
+        container.style.width = getParam(fhirGridParams, fhirGridParams.template, "width");
+
         winResize();
         changeServer();
-        
-
-        //Position the loading bar
-        // container = document.getElementById("fhirGridContainerLoading")
-        // container.style.position = "relative";
-        // container.style.top = `-${getParam(fhirGridParams, fhirGridParams.template, "height") - 31}px`;
-        // container.style.width = getParam(fhirGridParams, fhirGridParams.template, "width");
+        loadPatientsInit("");
     });
 
     //Toggle the sidebar elements between sidebar-mini and sidebar-normal
