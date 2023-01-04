@@ -15,7 +15,8 @@
     <link rel="icon" type="image/png" sizes="16x16" href="assets/favicon/favicon-16x16.png">
 
     <!-- CSS: generic -->
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm"
+        crossorigin="anonymous">
     <link rel="stylesheet" type="text/css" href="assets/css/material.css" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
 
@@ -35,30 +36,33 @@
 
     <style>
         /* Override the default blue of "pill" links */
-        
+
         .nav-pills .nav-link.active {
             background-color: #f09000 !important;
         }
+
         /********** Animate the 'loading' bar for fhirGrid **********/
-        
+
         @keyframes fadeIn {
             0% {
                 opacity: 0;
             }
+
             50% {
                 opacity: 33%
             }
         }
-        
+
         .fadeInFadeOut {
             animation: fadeIn 800ms infinite alternate;
         }
-        
+
         .fadeInFadeOutFast {
             animation: fadeIn 300ms infinite alternate;
         }
+
         /********** Style the FHIR server select **********/
-        
+
         .serverSelect {
             background-color: #e9ecef;
             border: 1px solid #ced4da;
@@ -79,14 +83,16 @@
             padding-bottom: 0px;
             padding-left: 5px;
         }
+
         /* Tooltip container */
-        
+
         .tooltip2 {
             position: relative;
             display: inline-block;
         }
+
         /* Tooltip text */
-        
+
         .tooltip2 .tooltiptext2 {
             visibility: hidden;
             width: 240px;
@@ -100,14 +106,16 @@
             opacity: 0;
             transition: opacity 1s;
         }
+
         /* Show the tooltip text when you mouse over the tooltip container */
-        
+
         .tooltip2:hover .tooltiptext2 {
             visibility: visible;
             opacity: 1;
         }
+
         /********** Style the FHIR server select **********/
-        
+
         #drop-area {
             border: 2px dashed #ccc;
             border-radius: 10px;
@@ -115,33 +123,33 @@
             margin: 50px auto;
             padding: 20px;
         }
-        
+
         #drop-area.highlight {
             border-color: rgb(32, 0, 128);
             background-color: rgb(141, 191, 191);
         }
-        
+
         #drop-area.highlight2 {
             border-color: rgb(32, 0, 128);
             background-color: rgb(210, 159, 72);
         }
-        
+
         #drop-area.highlight3 {
             border-color: rgb(32, 0, 128);
             background-color: rgb(158, 191, 141);
         }
-        
+
         #gallery {
             margin-top: 10px;
         }
-        
+
         #gallery img {
             width: 150px;
             margin-bottom: 10px;
             margin-right: 10px;
             vertical-align: middle;
         }
-        
+
         .fileDropButton {
             display: inline-block;
             padding: 10px;
@@ -150,11 +158,11 @@
             border-radius: 5px;
             border: 1px solid #ccc;
         }
-        
+
         .fileDropButton:hover {
             background: #fff;
         }
-        
+
         #fileElem {
             display: none;
         }
@@ -175,27 +183,32 @@
 
                 <!--Navbar list-->
                 <div class="nav flex-column nav-pills" id="sidebarNav" role="tablist" aria-orientation="vertical">
-                    <a class="nav-link text-white active" style="padding: 8px;" id="sidebarNav-server-tab" data-toggle="pill" href="#sidebarNav-server" role="tab" aria-controls="sidebarNav-profile" aria-selected="false">
+                    <a class="nav-link text-white active" style="padding: 8px;" id="sidebarNav-server-tab" data-toggle="pill" href="#sidebarNav-server" role="tab" aria-controls="sidebarNav-profile"
+                        aria-selected="false">
                         <i class="bi bi-pc" style="margin-right: 0px;"></i>
                         <span class="sidebar-mini" style="display: none;">FS</span>
                         <span class="sidebar-normal" style="display: inline;">FHIR Server</span>
                     </a>
-                    <a class="nav-link text-white" style="padding: 8px;" id="sidebarNav-otics-tab" data-toggle="pill" href="#sidebarNav-otics" role="tab" aria-controls="sidebarNav-profile" aria-selected="false">
+                    <a class="nav-link text-white" style="padding: 8px;" id="sidebarNav-otics-tab" data-toggle="pill" href="#sidebarNav-otics" role="tab" aria-controls="sidebarNav-profile"
+                        aria-selected="false">
                         <i class="material-icons" style="margin-right: 0px;">psychology</i>
                         <span class="sidebar-mini" style="display: none;">AI</span>
                         <span class="sidebar-normal" style="display: inline;">AI Training Data</span>
                     </a>
-                    <a class="nav-link text-white" style="padding: 8px;" id="sidebarNav-patient-tab" data-toggle="pill" href="#sidebarNav-patient" role="tab" aria-controls="sidebarNav-profile" aria-selected="false">
+                    <a class="nav-link text-white" style="padding: 8px;" id="sidebarNav-patient-tab" data-toggle="pill" href="#sidebarNav-patient" role="tab" aria-controls="sidebarNav-profile"
+                        aria-selected="false">
                         <i class="material-icons" style="margin-right: 0px;">person_search</i>
                         <span class="sidebar-mini" style="display: none;">Pt</span>
                         <span class="sidebar-normal" style="display: inline;">Patients</span>
                     </a>
-                    <a class="nav-link text-white" style="padding: 8px;" id="sidebarNav-medications-tab" data-toggle="pill" href="#sidebarNav-medications" role="tab" aria-controls="sidebarNav-messages" aria-selected="false">
+                    <a class="nav-link text-white" style="padding: 8px;" id="sidebarNav-medications-tab" data-toggle="pill" href="#sidebarNav-medications" role="tab"
+                        aria-controls="sidebarNav-messages" aria-selected="false">
                         <i class="material-icons" style="margin-right: 0px;">medication</i>
                         <span class="sidebar-mini" style="display: none;">Rx</span>
                         <span class="sidebar-normal" style="display: inline;">Medications</span>
                     </a>
-                    <a class="nav-link text-white" style="padding: 8px;" id="sidebarNav-cdaloader-tab" data-toggle="pill" href="#sidebarNav-cdaloader" role="tab" aria-controls="sidebarNav-messages" aria-selected="false">
+                    <a class="nav-link text-white" style="padding: 8px;" id="sidebarNav-cdaloader-tab" data-toggle="pill" href="#sidebarNav-cdaloader" role="tab" aria-controls="sidebarNav-messages"
+                        aria-selected="false">
                         <i class="material-icons" style="margin-right: 0px;">upload_file</i>
                         <span class="sidebar-mini" style="display: none;">CX</span>
                         <span class="sidebar-normal" style="display: inline;">CDA Loader</span>
@@ -269,9 +282,11 @@
                                     <div style="padding-top: 13px; padding-right:4px;">
                                         <i class="bi bi-search"></i>
                                     </div>
-                                    <input type="text" id="patientFilter" class="form-control" style="padding-top: 0px; padding-bottom: 2px;" placeholder="Filter patient by" aria-label="patientFilter" aria-describedby="basic-addon1">
+                                    <input type="text" id="patientFilter" class="form-control" style="padding-top: 0px; padding-bottom: 2px;" placeholder="Filter patient by" aria-label="patientFilter"
+                                        aria-describedby="basic-addon1">
                                     <div class="input-group-append">
-                                        <select id="patientFilterField" onchange="loadPatientsInit(document.getElementById('patientFilter').value)" style="background-color: transparent; border: transparent; font-family: Roboto, Helvetica; font-size: 14px; color: rgb(73, 80, 87);">
+                                        <select id="patientFilterField" onchange="loadPatientsInit(document.getElementById('patientFilter').value)"
+                                            style="background-color: transparent; border: transparent; font-family: Roboto, Helvetica; font-size: 14px; color: rgb(73, 80, 87);">
                                             <option value="family">Family name (starts with)</option>
                                             <option value="name">Name (any part)</option>
                                             <option value="identifier">Identifier (exact)</option>
@@ -283,7 +298,376 @@
                             <div id="fhirGridContainer" style="visibility:visible;"></div>
                             <div id="fhirGridContainerLoading" class="fadeInFadeOut" style="z-index: 999; visibility:visible; background-color:rgb(0, 140, 255); height:3px;"></div>
                             <!-- The placeholder while data is loading / no results found -->
-                            <div id="fhirGridPlaceholder" style="text-align: center; font-size: 18px; color: #d0d0d0; font-weight:bold;">Fetching some data...<br><span style="font-size: 14px; font-weight: 400;">The initial load may take some time while the server warms up.</span></div>
+                            <div id="fhirGridPlaceholder" style="text-align: center; font-size: 18px; color: #d0d0d0; font-weight:bold;">Fetching some data...<br><span
+                                    style="font-size: 14px; font-weight: 400;">The initial load may take some time while the server warms up.</span></div>
+                            <!-- The Patient demographics cards -->
+                            <div class="row" id="demographicsAnchor">
+                                <div class="col-md-9">
+                                    <div class="card">
+                                        <div class="card-header">
+                                            <h4 class="title">Demographics</h4>
+                                        </div>
+                                        <div class="card-body">
+                                            <form>
+                                                <div class="row">
+                                                    <div class="col-md-5 pr-1">
+                                                        <div class="form-group">
+                                                            <label>Managing Organizagtion</label>
+                                                            <input type="text" class="form-control" disabled="" placeholder="Care Network" value="" id="demographicsManagingOrganization">
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-3 px-1">
+                                                        <div class="form-group">
+                                                            <label>Most Responsible Physician</label>
+                                                            <input type="text" class="form-control" placeholder="MRP" value="Dr. R. Kwon">
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-4 pl-1">
+                                                        <div class="form-group">
+                                                            <label>Insurer</label>
+                                                            <input type="email" class="form-control" placeholder="Payer" value="BCBSNY">
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="row">
+                                                    <div class="col-md-5 pr-1">
+                                                        <div class="form-group">
+                                                            <label>Last Name</label>
+                                                            <input type="text" class="form-control" placeholder="Last name" value="" id="demographicsLastName">
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-7 pl-1">
+                                                        <div class="form-group">
+                                                            <label>Given Name(s)</label>
+                                                            <input type="text" class="form-control" placeholder="Given Names" value="" id="demographicsGivenNames">
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="row">
+                                                    <div class="col-md-1 pr-1 text-center">
+                                                        <div class="form-group">
+                                                            <label>Active</label>
+                                                            <div class="form-check">
+                                                                <input class="form-check-input" type="checkbox" value="" id="flexCheckChecked" checked id="demographicsActive">
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-3 pl-1">
+                                                        <div class="form-group">
+                                                            <label>DOB</label>
+                                                            <div class="form-group" style="margin-top:2px;">
+                                                                <input type="date" name="dob" class="form-control" value="" id="demographicsDOB">
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-2 pl-1">
+                                                        <div class="form-group">
+                                                            <label>Birth gender</label>
+                                                            <div class="form-group" style="margin-top:0px;">
+                                                                <select class="form-control" id="demographicsBirthGender">
+                                                                    <option value="female">Female</option>
+                                                                    <option value="male">Male</option>
+                                                                    <option value="other">Other</option>
+                                                                    <option value="unknown" selected>Unknown</option>
+                                                                </select>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-2 pl-1">
+                                                        <div class="form-group">
+                                                            <label>Identifies as</label>
+                                                            <div class="form-group" style="margin-top:0px;">
+                                                                <select class="form-control" id="demographicsIdentifiesAsGender">
+                                                                    <option value="female">Female</option>
+                                                                    <option value="male">Male</option>
+                                                                    <option value="other">Other</option>
+                                                                    <option value="unknown" selected>Unknown</option>
+                                                                </select>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-4 pl-1">
+                                                        <div class="form-group">
+                                                            <label>Language</label>
+                                                            <div class="form-group" style="margin-top:0px;">
+                                                                <select class="form-control" id="DemographicsLanguage">
+                                                                    <option value="af">Afrikaans</option>
+                                                                    <option value="sq">Albanian - shqip</option>
+                                                                    <option value="am">Amharic - አማርኛ</option>
+                                                                    <option value="ar">Arabic - العربية</option>
+                                                                    <option value="an">Aragonese - aragonés</option>
+                                                                    <option value="hy">Armenian - հայերեն</option>
+                                                                    <option value="ast">Asturian - asturianu</option>
+                                                                    <option value="az">Azerbaijani - azərbaycan dili</option>
+                                                                    <option value="eu">Basque - euskara</option>
+                                                                    <option value="be">Belarusian - беларуская</option>
+                                                                    <option value="bn">Bengali - বাংলা</option>
+                                                                    <option value="bs">Bosnian - bosanski</option>
+                                                                    <option value="br">Breton - brezhoneg</option>
+                                                                    <option value="bg">Bulgarian - български</option>
+                                                                    <option value="ca">Catalan - català</option>
+                                                                    <option value="ckb">Central Kurdish - کوردی (دەستنوسی عەرەبی)</option>
+                                                                    <option value="zh">Chinese - 中文</option>
+                                                                    <option value="zh-HK">Chinese (Hong Kong) - 中文（香港）</option>
+                                                                    <option value="zh-CN">Chinese (Simplified) - 中文（简体）</option>
+                                                                    <option value="zh-TW">Chinese (Traditional) - 中文（繁體）</option>
+                                                                    <option value="co">Corsican</option>
+                                                                    <option value="hr">Croatian - hrvatski</option>
+                                                                    <option value="cs">Czech - čeština</option>
+                                                                    <option value="da">Danish - dansk</option>
+                                                                    <option value="nl">Dutch - Nederlands</option>
+                                                                    <option value="en">English</option>
+                                                                    <option value="en-AU">English (Australia)</option>
+                                                                    <option value="en-CA">English (Canada)</option>
+                                                                    <option value="en-IN">English (India)</option>
+                                                                    <option value="en-NZ">English (New Zealand)</option>
+                                                                    <option value="en-ZA">English (South Africa)</option>
+                                                                    <option value="en-GB">English (United Kingdom)</option>
+                                                                    <option value="en-US">English (United States)</option>
+                                                                    <option value="eo">Esperanto - esperanto</option>
+                                                                    <option value="et">Estonian - eesti</option>
+                                                                    <option value="fo">Faroese - føroyskt</option>
+                                                                    <option value="fil">Filipino</option>
+                                                                    <option value="fi">Finnish - suomi</option>
+                                                                    <option value="fr">French - français</option>
+                                                                    <option value="fr-CA">French (Canada) - français (Canada)</option>
+                                                                    <option value="fr-FR">French (France) - français (France)</option>
+                                                                    <option value="fr-CH">French (Switzerland) - français (Suisse)</option>
+                                                                    <option value="gl">Galician - galego</option>
+                                                                    <option value="ka">Georgian - ქართული</option>
+                                                                    <option value="de">German - Deutsch</option>
+                                                                    <option value="de-AT">German (Austria) - Deutsch (Österreich)</option>
+                                                                    <option value="de-DE">German (Germany) - Deutsch (Deutschland)</option>
+                                                                    <option value="de-LI">German (Liechtenstein) - Deutsch (Liechtenstein)</option>
+                                                                    <option value="de-CH">German (Switzerland) - Deutsch (Schweiz)</option>
+                                                                    <option value="el">Greek - Ελληνικά</option>
+                                                                    <option value="gn">Guarani</option>
+                                                                    <option value="gu">Gujarati - ગુજરાતી</option>
+                                                                    <option value="ha">Hausa</option>
+                                                                    <option value="haw">Hawaiian - ʻŌlelo Hawaiʻi</option>
+                                                                    <option value="he">Hebrew - עברית</option>
+                                                                    <option value="hi">Hindi - हिन्दी</option>
+                                                                    <option value="hu">Hungarian - magyar</option>
+                                                                    <option value="is">Icelandic - íslenska</option>
+                                                                    <option value="id">Indonesian - Indonesia</option>
+                                                                    <option value="ia">Interlingua</option>
+                                                                    <option value="ga">Irish - Gaeilge</option>
+                                                                    <option value="it">Italian - italiano</option>
+                                                                    <option value="it-IT">Italian (Italy) - italiano (Italia)</option>
+                                                                    <option value="it-CH">Italian (Switzerland) - italiano (Svizzera)</option>
+                                                                    <option value="ja">Japanese - 日本語</option>
+                                                                    <option value="kn">Kannada - ಕನ್ನಡ</option>
+                                                                    <option value="kk">Kazakh - қазақ тілі</option>
+                                                                    <option value="km">Khmer - ខ្មែរ</option>
+                                                                    <option value="ko">Korean - 한국어</option>
+                                                                    <option value="ku">Kurdish - Kurdî</option>
+                                                                    <option value="ky">Kyrgyz - кыргызча</option>
+                                                                    <option value="lo">Lao - ລາວ</option>
+                                                                    <option value="la">Latin</option>
+                                                                    <option value="lv">Latvian - latviešu</option>
+                                                                    <option value="ln">Lingala - lingála</option>
+                                                                    <option value="lt">Lithuanian - lietuvių</option>
+                                                                    <option value="mk">Macedonian - македонски</option>
+                                                                    <option value="ms">Malay - Bahasa Melayu</option>
+                                                                    <option value="ml">Malayalam - മലയാളം</option>
+                                                                    <option value="mt">Maltese - Malti</option>
+                                                                    <option value="mr">Marathi - मराठी</option>
+                                                                    <option value="mn">Mongolian - монгол</option>
+                                                                    <option value="ne">Nepali - नेपाली</option>
+                                                                    <option value="no">Norwegian - norsk</option>
+                                                                    <option value="nb">Norwegian Bokmål - norsk bokmål</option>
+                                                                    <option value="nn">Norwegian Nynorsk - nynorsk</option>
+                                                                    <option value="oc">Occitan</option>
+                                                                    <option value="or">Oriya - ଓଡ଼ିଆ</option>
+                                                                    <option value="om">Oromo - Oromoo</option>
+                                                                    <option value="ps">Pashto - پښتو</option>
+                                                                    <option value="fa">Persian - فارسی</option>
+                                                                    <option value="pl">Polish - polski</option>
+                                                                    <option value="pt">Portuguese - português</option>
+                                                                    <option value="pt-BR">Portuguese (Brazil) - português (Brasil)</option>
+                                                                    <option value="pt-PT">Portuguese (Portugal) - português (Portugal)</option>
+                                                                    <option value="pa">Punjabi - ਪੰਜਾਬੀ</option>
+                                                                    <option value="qu">Quechua</option>
+                                                                    <option value="ro">Romanian - română</option>
+                                                                    <option value="mo">Romanian (Moldova) - română (Moldova)</option>
+                                                                    <option value="rm">Romansh - rumantsch</option>
+                                                                    <option value="ru">Russian - русский</option>
+                                                                    <option value="gd">Scottish Gaelic</option>
+                                                                    <option value="sr">Serbian - српски</option>
+                                                                    <option value="sh">Serbo-Croatian - Srpskohrvatski</option>
+                                                                    <option value="sn">Shona - chiShona</option>
+                                                                    <option value="sd">Sindhi</option>
+                                                                    <option value="si">Sinhala - සිංහල</option>
+                                                                    <option value="sk">Slovak - slovenčina</option>
+                                                                    <option value="sl">Slovenian - slovenščina</option>
+                                                                    <option value="so">Somali - Soomaali</option>
+                                                                    <option value="st">Southern Sotho</option>
+                                                                    <option value="es">Spanish - español</option>
+                                                                    <option value="es-AR">Spanish (Argentina) - español (Argentina)</option>
+                                                                    <option value="es-419">Spanish (Latin America) - español (Latinoamérica)</option>
+                                                                    <option value="es-MX">Spanish (Mexico) - español (México)</option>
+                                                                    <option value="es-ES">Spanish (Spain) - español (España)</option>
+                                                                    <option value="es-US">Spanish (United States) - español (Estados Unidos)</option>
+                                                                    <option value="su">Sundanese</option>
+                                                                    <option value="sw">Swahili - Kiswahili</option>
+                                                                    <option value="sv">Swedish - svenska</option>
+                                                                    <option value="tg">Tajik - тоҷикӣ</option>
+                                                                    <option value="ta">Tamil - தமிழ்</option>
+                                                                    <option value="tt">Tatar</option>
+                                                                    <option value="te">Telugu - తెలుగు</option>
+                                                                    <option value="th">Thai - ไทย</option>
+                                                                    <option value="ti">Tigrinya - ትግርኛ</option>
+                                                                    <option value="to">Tongan - lea fakatonga</option>
+                                                                    <option value="tr">Turkish - Türkçe</option>
+                                                                    <option value="tk">Turkmen</option>
+                                                                    <option value="tw">Twi</option>
+                                                                    <option value="uk">Ukrainian - українська</option>
+                                                                    <option value="ur">Urdu - اردو</option>
+                                                                    <option value="ug">Uyghur</option>
+                                                                    <option value="uz">Uzbek - o‘zbek</option>
+                                                                    <option value="vi">Vietnamese - Tiếng Việt</option>
+                                                                    <option value="wa">Walloon - wa</option>
+                                                                    <option value="cy">Welsh - Cymraeg</option>
+                                                                    <option value="fy">Western Frisian</option>
+                                                                    <option value="xh">Xhosa</option>
+                                                                    <option value="yi">Yiddish</option>
+                                                                    <option value="yo">Yoruba - Èdè Yorùbá</option>
+                                                                    <option value="zu">Zulu - isiZulu</option>
+                                                                </select>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="row">
+                                                    <div class="col-md-12">
+                                                        <div class="form-group">
+                                                            <label>Address</label>
+                                                            <input type="text" class="form-control" placeholder="Primary Address" value="" id="demographicsAddress">
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="row">
+                                                    <div class="col-md-4 pr-1">
+                                                        <div class="form-group" style="margin-top:10px;">
+                                                            <label>City</label>
+                                                            <input type="text" class="form-control" placeholder="City" value="" id="demographicsCity">
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-4 px-1">
+                                                        <div class="form-group">
+                                                            <label>State</label>
+                                                            <div class="form-group" style="margin-top:0px;">
+                                                                <select class="form-control" id="demographicsState">
+                                                                    <option value="AL">Alabama</option>
+                                                                    <option value="AK">Alaska</option>
+                                                                    <option value="AZ">Arizona</option>
+                                                                    <option value="AR">Arkansas</option>
+                                                                    <option value="CA">California</option>
+                                                                    <option value="CO">Colorado</option>
+                                                                    <option value="CT">Connecticut</option>
+                                                                    <option value="DE">Delaware</option>
+                                                                    <option value="DC">District Of Columbia</option>
+                                                                    <option value="FL">Florida</option>
+                                                                    <option value="GA">Georgia</option>
+                                                                    <option value="HI">Hawaii</option>
+                                                                    <option value="ID">Idaho</option>
+                                                                    <option value="IL">Illinois</option>
+                                                                    <option value="IN">Indiana</option>
+                                                                    <option value="IA">Iowa</option>
+                                                                    <option value="KS">Kansas</option>
+                                                                    <option value="KY">Kentucky</option>
+                                                                    <option value="LA">Louisiana</option>
+                                                                    <option value="ME">Maine</option>
+                                                                    <option value="MD">Maryland</option>
+                                                                    <option value="MA">Massachusetts</option>
+                                                                    <option value="MI">Michigan</option>
+                                                                    <option value="MN">Minnesota</option>
+                                                                    <option value="MS">Mississippi</option>
+                                                                    <option value="MO">Missouri</option>
+                                                                    <option value="MT">Montana</option>
+                                                                    <option value="NE">Nebraska</option>
+                                                                    <option value="NV">Nevada</option>
+                                                                    <option value="NH">New Hampshire</option>
+                                                                    <option value="NJ">New Jersey</option>
+                                                                    <option value="NM">New Mexico</option>
+                                                                    <option value="NY" selected>New York</option>
+                                                                    <option value="NC">North Carolina</option>
+                                                                    <option value="ND">North Dakota</option>
+                                                                    <option value="OH">Ohio</option>
+                                                                    <option value="OK">Oklahoma</option>
+                                                                    <option value="OR">Oregon</option>
+                                                                    <option value="PA">Pennsylvania</option>
+                                                                    <option value="RI">Rhode Island</option>
+                                                                    <option value="SC">South Carolina</option>
+                                                                    <option value="SD">South Dakota</option>
+                                                                    <option value="TN">Tennessee</option>
+                                                                    <option value="TX">Texas</option>
+                                                                    <option value="UT">Utah</option>
+                                                                    <option value="VT">Vermont</option>
+                                                                    <option value="VA">Virginia</option>
+                                                                    <option value="WA">Washington</option>
+                                                                    <option value="WV">West Virginia</option>
+                                                                    <option value="WI">Wisconsin</option>
+                                                                    <option value="WY">Wyoming</option>
+                                                                    <option disabled>----------------</option>
+                                                                    <option value="AS">American Samoa</option>
+                                                                    <option value="GU">Guam</option>
+                                                                    <option value="MP">Northern Mariana Islands</option>
+                                                                    <option value="PR">Puerto Rico</option>
+                                                                    <option value="UM">United States Minor Outlying Islands</option>
+                                                                    <option value="VI">Virgin Islands</option>
+                                                                    <option disabled>----------------</option>
+                                                                    <option value="AA">Armed Forces Americas</option>
+                                                                    <option value="AP">Armed Forces Pacific</option>
+                                                                    <option value="AE">Armed Forces Others</option>
+                                                                </select>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-4 pl-1">
+                                                        <div class="form-group" style="margin-top:10px;">
+                                                            <label>Zip Code</label>
+                                                            <input type="text" class="form-control" placeholder="ZIP Code" value="" id="demographicsZipCode">
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="row">
+                                                    <div class="col-md-12">
+                                                        <div class="form-group">
+                                                            <label>Private notes (visible only to me)</label>
+                                                            <textarea rows="4" cols="80" class="form-control textarea"
+                                                                placeholder="These notes are meant to be visible only to me; however, these note are part of the patient record and could potentially be viewed by others."></textarea>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="card">
+                                        <div class="card-header">
+                                            <h4 class="card-title">Contact Methods</h4>
+                                        </div>
+                                        <div class="card-body">
+                                            <ul class="list-unstyled team-members" id="demographicsContactMethods">
+                                                <!-- <li>
+                                                    <div class="row">
+                                                        <div class="col-md-9">
+                                                            Contact method 1
+                                                            <br />
+                                                            <span class="text-muted"><small>Preferred</small></span>
+                                                        </div>
+                                                        <div class="col-md-3 text-right">
+                                                            <btn class="btn btn-sm btn-outline-success btn-round btn-icon"><i class="fa fa-envelope"></i></btn>
+                                                        </div>
+                                                    </div>
+                                                </li> -->
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
                         <!-- Medication -->
@@ -294,8 +678,10 @@
 
                         <!-- CDA Loader -->
                         <div class="tab-pane fade" id="sidebarNav-cdaloader" aria-labelledby="sidebarNav-cdaloader-tab" role="tabpanel">
-                            <div id="drop-area-alert">Smile CDR FHIR server as of version 2022.02.R08 and newer supports the <a href="https://smilecdr.com/docs/configuration_categories/cda_import.html" target="_blank">$import-cda</a> operation. The <a id="drop-area-alert-href"
-                                    href="https://smilecdr.com/docs/configuration_categories/cda_import.html" target="_blank">CDA Exchange module</a> needs to be enabled.</div>
+                            <div id="drop-area-alert">Smile CDR FHIR server as of version 2022.02.R08 and newer supports the <a
+                                    href="https://smilecdr.com/docs/configuration_categories/cda_import.html" target="_blank">$import-cda</a> operation. The <a id="drop-area-alert-href"
+                                    href="https://smilecdr.com/docs/configuration_categories/cda_import.html" target="_blank">CDA
+                                    Exchange module</a> needs to be enabled.</div>
                             <div id="drop-area" style="visibility: hidden;">
                                 <form class="my-form">
                                     <p style="text-align:center;">Convert and upload CDA file(s)</p>
@@ -330,7 +716,8 @@
 
 <!--   Core JS Files   -->
 <script src="https://code.jquery.com/jquery-3.6.1.min.js" integrity="sha256-o88AwQnZB+VDvE9tvIXrMQaPlFFSUTR+nldQm1LuPXQ=" crossorigin="anonymous"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-Fy6S3B9q64WdZWQUiU+q4/2Lc9npb8tCaSX9FK7E8HnRr0Jz8D6OP9dO5Vg3Q9ct" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-Fy6S3B9q64WdZWQUiU+q4/2Lc9npb8tCaSX9FK7E8HnRr0Jz8D6OP9dO5Vg3Q9ct"
+    crossorigin="anonymous"></script>
 <script src="assets/js/material.min.js" type="text/javascript"></script>
 <script src="assets/js/perfect-scrollbar.jquery.min.js" type="text/javascript"></script>
 
@@ -419,9 +806,9 @@
         let d = document.getElementById("serverCapabilities");
         let obj = {};
         obj["Server"] = `<a href="${dataParams.baseURL}" target="_blank" style="color: #ffffff;">${dataParams.baseURL} <i class="material-icons" style="margin-right: 0px;">open_in_new</i></a>`;
-        obj["Credentials"] = `<form>username: <input id="serverCredsUN" type=text value="${FHIRRefByRef(dataParams.servers, "server", dataParams.baseURL, "un")}">
-            &nbsp; &nbsp; password: <input id="serverCredsPW" type=password value="${FHIRRefByRef(dataParams.servers, "server", dataParams.baseURL, "pw")}">
-            &nbsp; &nbsp; <input type="button" value="Use (this session, not saved)" onClick="updateServerCreds()"></form>`;
+        obj["Credentials"] = `<form>username: <input id="serverCredsUN" type=text value="${FHIRRefByRef(dataParams.servers, "server", dataParams.baseURL, "un")}" onChange='document.getElementById("buttonUseThisSession").style.backgroundColor = "#c0c0c0"'>
+            &nbsp; &nbsp; password: <input id="serverCredsPW" type=password value="${FHIRRefByRef(dataParams.servers, "server", dataParams.baseURL, "pw")}" onChange='document.getElementById("buttonUseThisSession").style.backgroundColor = "#c0c0c0"'>
+            &nbsp; &nbsp; <input id="buttonUseThisSession" type="button" value="Use (this session, not saved)" onClick="updateServerCreds()"></form>`;
         if (serverErr != "") {
             obj["Error"] = "<img src='assets/img/error.png' height=20 width=20>&nbsp;" + serverErr + "<br>You are most likely seeing this error because the server is unreachable."
         } else {
@@ -443,6 +830,7 @@
             }
         }
         dataParams.baseCredentials = btoa(`${FHIRRefByRef(dataParams.servers, "server", dataParams.baseURL, "un")}:${FHIRRefByRef(dataParams.servers, "server", dataParams.baseURL, "pw")}`);
+        document.getElementById("buttonUseThisSession").style.backgroundColor = "#20c060"
     }
 
     //Modify the FHIR Explorer behavior based on the specific FHIR server. E.g. disable CDA Loader if the server doesn't support it.
@@ -466,9 +854,9 @@
         return "";
     }
 
-
     /*************** Remote Server Operations (previously AJAX) ***************/
     //async/await fetch (i.e. Promise AJAX)
+    //Todo: APICall is more generic. Replace this function with APICall 
     async function loadResource(resURL) {
         serverErr = "";
         try {
@@ -478,6 +866,20 @@
         } catch (error) {
             console.log("err: ", error);
             serverErr = error;
+        }
+    }
+
+    //async/await fetch (i.e. Promise AJAX). apiPath = everything after the domain (e.g. Patient/123). callbackfn e.g.: function(data){console.log(data)}
+    async function APICall(apiPath, callbackFn, verb = "GET") {
+        try {
+            let api = dataParams.baseURL + apiPath;
+            let fetchHeaders = new Headers();
+            if (dataParams.baseCredentials != "Og==") { fetchHeaders.append("Authorization", `Basic ${dataParams.baseCredentials}`) }   //"Og==" is base64 encoding of anonymous credentials
+            const source = await fetch(api, { method: `${verb}`, headers: fetchHeaders });
+            const result = await source.json();
+            if (callbackFn !== undefined) callbackFn(result);
+        } catch (err) {
+            console.log("err: ", err);
         }
     }
 
@@ -509,7 +911,7 @@
     //Read a text [file] from the local drive, then call [callback]
     getFile = (file, callback, fileName) => {
         let reader = new FileReader();
-        reader.addEventListener('load', function(e) {
+        reader.addEventListener('load', function (e) {
             let text = e.target.result;
             callback(text, fileName)
         });
@@ -518,9 +920,9 @@
 
     //This is the callback function for getFileList(). This reads each line of the file into an array.
     processFileList = (fileContents, fileName) => {
-            fileContents = fileContents.split(/[\r\n]+/g); // tolerate both Windows and Unix linebreaks
-            document.querySelector(`#${fileName}Content`).textContent = fileContents.length + " records";
-            dataParams.populations[fileName] = JSON.parse(`{ "records": ${fileContents.length}, "list": [${fileContents.map(file => `"${file}"`)}] }`); //The map function encapsulates each row (file) in quotes
+        fileContents = fileContents.split(/[\r\n]+/g); // tolerate both Windows and Unix linebreaks
+        document.querySelector(`#${fileName}Content`).textContent = fileContents.length + " records";
+        dataParams.populations[fileName] = JSON.parse(`{ "records": ${fileContents.length}, "list": [${fileContents.map(file => `"${file}"`)}] }`); //The map function encapsulates each row (file) in quotes
         if (Object.keys(dataParams.populations).length >= 2) { document.querySelector("#sendFilesToServer").disabled = false }
         console.log('To see contents, type: "> dataParams"');
     }
@@ -806,15 +1208,69 @@
         }
     });
 
-    //Add a listener for selecting a row in the fhirGrid --> Change to the Patient tab and display the "WebSocket Console"
+    //Add a listener for selecting a row in the fhirGrid --> Retrieve the patient and populate the demographics section
     fhirGrid.on("rowClick", function (e, row) {
+        //Retrieve the patient resource
+        //This is an example. To make it robust: Create a class to return business objects, e.g. Patient.phone, Patient.physicians, Patient.PCP
         fhirGridParams.resID = row.getData()[getParam(fhirGridParams, fhirGridParams.template, "id")];
-        // document.getElementById("webSocketConsoleTitle").innerHTML = "Websocket console";
-        document.getElementById("webSocketConsole").innerHTML = `Resource: ${fhirGridParams.resID}<br><span>Listening</span><span class="fadeInFadeOutFast" style="font-size: 10px;"><i class="bi bi-file-fill"></i></span>`;
-        document.getElementById("webSocketConsoleContainer").style.visibility = "visible";
-        setInterval(pollServer, 3000);
-        document.getElementById("Patient-patientNameHeader").innerHTML = `<b>${row.getData()["full"]}</b> [ID:${fhirGridParams.resID}]`;
-        $('#sidebarNav-patient-tab').tab('show');
+        APICall("Patient/" + fhirGridParams.resID, function (apiResult) {
+            if (apiResult.issue === undefined) {   //no errors in FHIR query
+                //populate the demographics card
+                console.log("API returns >> ", apiResult)
+                if ((apiResult.managingOrganization && apiResult.name && apiResult.communication && apiResult.address) == undefined) {  //returns true if 1 or more of apiResult.* is undefined
+                    console.log("Certain data fields are empty; hence the following error. (To do: make this robust by creating well formed business objects from the FHIR data.)")
+                }
+                document.getElementById("demographicsManagingOrganization").value = apiResult.managingOrganization.display || "n/a";
+                document.getElementById("demographicsLastName").value = apiResult.name[0].family || "n/a";
+                document.getElementById("demographicsGivenNames").value = apiResult.name[0].given.join(" ") || "n/a";
+                if (apiResult.Active == false) (document.getElementById("demographicsActive").checked = false);
+                document.getElementById("demographicsDOB").value = apiResult.birthDate || "";
+                let birthGender = FHIRRefByRef(apiResult.extension, "url", "http://hl7.org/fhir/us/core/StructureDefinition/us-core-birthsex", "valueCode") || (apiResult.gender || "");
+                if (birthGender == "UNK") { birthGender = "unknown" };
+                document.getElementById("demographicsBirthGender").value = birthGender;
+                document.getElementById("demographicsIdentifiesAsGender").value = apiResult.gender || "";
+                document.getElementById("DemographicsLanguage").value = apiResult.communication[0].language.coding[0].code || apiResult.communication[0].language;
+                let addr = apiResult.address[0];
+                document.getElementById("demographicsAddress").value = addr.line.join(", ") + ` [${addr.use}]`;
+                document.getElementById("demographicsCity").value = addr.city;
+                document.getElementById("demographicsState").value = addr.state;
+                document.getElementById("demographicsZipCode").value = addr.postalCode;
+                //populate the Contact Methods card
+                const list = document.getElementById("demographicsContactMethods");
+                list.innerHTML = "";
+                for (const el of apiResult.telecom) {
+                    list.innerHTML += `<li>
+                    <div class="row">
+                            <div class="col-md-9">
+                                 ${el.value}
+                                 <br />
+                                 <span class="text-muted"><small>${el.use}</small></span>
+                             </div>
+                             <div class="col-md-3 text-right">
+                                 <btn class="btn btn-sm btn-outline-success btn-round btn-icon"><i class="fa fa-${el.system == "phone" ? "phone" : "envelope"}"></i></btn>
+                             </div>
+                         </div>
+                    </li>`;
+                };
+                //Now retrieve an associated record, i.e. the Managing Organization
+                APICall(apiResult.managingOrganization.reference, function (apiResult) {
+                    console.log("Managing Organization >> ", apiResult)
+                });
+                //Now retrieve all observations of a given type and plot them
+                APICall("Observation?code=59408-5&subject=Patient/" + fhirGridParams.resID, function (apiResult) {
+                    console.log("Observations for blood Ox >> ", apiResult)
+                });
+            } else {
+                console.log("Error in FHIR Query >> ", apiResult)
+            }
+        });
+        //smooth scroll to the demographics section
+        let anchor = document.getElementById("demographicsAnchor");
+        anchor.scrollIntoView({
+            block: 'start',
+            behavior: 'smooth',
+            inline: 'start'
+        });
     });
 
     //async/await fetch (i.e. Promise AJAX)
@@ -832,6 +1288,7 @@
             document.getElementById("fhirGridContainerLoading").style.visibility = "hidden";
         } catch (error) {
             console.log("err: ", error);
+            console.log("Check server, credentials, search parameters,...")
             document.getElementById("fhirGridContainerLoading").style.visibility = "hidden";
         }
     }
@@ -875,7 +1332,10 @@
             e.preventDefault()
             $(this).tab('show')
             // Redraw the medTimeline the first time it is displayed. (This addresses an issue where initially it doesn't fully render)
-            setTimeout(() => { if (medTimelineInitialDraw) { timeline.redraw(); medTimelineInitialDraw = 0; } }, 750);
+            if (curTab.toUpperCase() == "MEDICATIONS") {
+                console.log("Drawing the medication timeline...")
+                setTimeout(() => { if (medTimelineInitialDraw) { timeline.redraw(); medTimelineInitialDraw = 0; } }, 1000);
+            }
         });
 
         //Position the loading bar
