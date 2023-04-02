@@ -1,0 +1,549 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <title>Care Gaps</title>
+
+    <!-- Favicons -->
+    <link rel="apple-touch-icon" sizes="180x180" href="assets/favicon/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="assets/favicon/favicon-16x16.png">
+
+    <!--  Fonts and icons -->
+    <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/font-awesome/latest/css/font-awesome.min.css" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Material+Icons" />
+    <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+    <!--  Logger  -->
+    <link rel="stylesheet" type="text/css" href="assets/css/logger.css" />
+
+    <!--  JSON Viewer  -->
+    <link rel="stylesheet" type="text/css" href="assets/css/jquery.json-viewer.css" />
+
+    <!-- Stepped Progress Bar -->
+    <link rel="stylesheet" type="text/css" href="assets/css/steppedProgress.css" rel="stylesheet">
+
+    <!-- CSS: Tabulator (fhirGrid) -->
+    <!-- <link href="https://unpkg.com/tabulator-tables/dist/css/tabulator.min.css" rel="stylesheet"> -->
+    <link href="assets/css/tabulator_modern.css" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: "Lato", sans-serif;
+            margin: 0px;
+            padding: 0px;
+        }
+
+        /* .mockEMR = the mock EMR */
+        .mockEMRContainer {
+            display: flex;
+            flex-flow: column;
+            height: 100vh;
+            overflow: auto;
+            box-sizing: border-box;
+        }
+
+        .mockEMRContainer pre,
+        .mockEMRContainer span,
+        .mockEMRContainer div {
+            /* Set width to 1 for debugging */
+            border: 0px solid #0f0;
+            box-sizing: border-box;
+        }
+
+        .mockEMRContainer .rowTitle {
+            min-height: 40px;
+            background: #8ac;
+            display: flex;
+            align-items: center;
+            filter: drop-shadow(0px 1px 2px #000);
+        }
+
+        .mockEMRContainer .rowTitle .alignRight {
+            margin-left: auto;
+            margin-right: 20px;
+            display: flex;
+            align-items: center;
+        }
+
+        .mockEMRContainer .headingTitle {
+            font: oblique bold 24px arial;
+            color: #fff;
+            filter: drop-shadow(0px 0px 2px #000);
+        }
+
+        .mockEMRContainer .headingTitle2 {
+            font: bold 16px arial;
+            color: #fff;
+        }
+
+        .mockEMRContainer .rowBody {
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+            margin: 5px 5px 0px 5px;
+        }
+
+        .mockEMRContainer .rowFooter {
+            font: 14px arial;
+            color: #fff;
+            background: #8ac;
+            filter: drop-shadow(0px 1px 2px #000);
+        }
+
+        .mockEMRContainer .bodyRow {
+            width: 100%;
+            height: 100%;
+            background-color: #fff;
+        }
+
+        .mockEMRContainer .bodyRow .emr {
+            width: 60%;
+            height: 100%;
+            background-color: #cef;
+        }
+
+        .mockEMRContainer .bodyRow .abcAPIContainer {
+            flex: 1;
+            overflow: auto;
+            height: 100%;
+        }
+
+        .mockEMRContainer .resetDemo {
+            color: rgba(0, 0, 0, 0.3);
+            cursor: pointer;
+        }
+
+        .mockEMRContainer .button {
+            background-color: #8ac;
+            border: none;
+            color: #fff;
+            font-weight: bold;
+            padding: 10px 20px;
+            text-align: center;
+            display: inline-block;
+            font-size: 16px;
+            border-radius: 5px;
+            border: 2px solid #ffffff00;
+        }
+
+        .mockEMRContainer .button:hover {
+            color: #8ac;
+            background-color: #1c2833;
+            border: 2px solid #8ac;
+            filter: drop-shadow(0px 0px 2px #8ac);
+            cursor: pointer;
+        }
+    </style>
+
+    <script>
+        /*************** Global Data Parameters ***************/
+        let dataParams = {
+            servers: [{ //credentials: fill in if you wish (obviously INSECURE!!!), leave blank for anonymous / to be prompted in webGUI
+                "server": "http://localhost:8000/",
+                un: "admin",
+                pw: "password"
+            }, {
+                "server": "https://hapi.fhir.org/baseR4/",
+                un: "",
+                pw: ""
+            }, {
+                "server": "https://try.smilecdr.com/baseR4/",
+                un: "",
+                pw: ""
+            }],
+            baseURL: "",
+            baseCredentials: "",
+        };
+        dataParams.baseURL = dataParams.servers[1].server;
+
+        //Get the parameter value from the subsection first; otherwise get it from the root
+        getParam = (paramList, section, param) => {
+            return paramList[section][param] || paramList[param]
+        }
+
+
+        /*************** Mock EMR functions ***************/
+        var Logger;
+
+        /*************** Remote Server Operations (previously AJAX) ***************/
+        //async/await fetch (i.e. Promise AJAX). apiPath = everything after the domain (e.g. Patient/123). callbackfn e.g.: function(data){console.log(data)}
+        //   verb is optional, default = GET. body is optional. headersObj is optional, e.g. {"Content-Type": "text/plain",}. optionsObj is optional, e.g. {mode: "cors",}
+        async function APICall(apiPath, callbackFn, verb, body, headersObj, optionsObj) {
+            try {
+                if (!verb) verb = "GET";
+                if (!optionsObj) optionsObj = {};
+                let api = dataParams.baseURL + apiPath;
+                //headers
+                let fetchHeaders = new Headers(
+                    headersObj
+                );
+                if (dataParams.baseCredentials != "Og==") { fetchHeaders.append("Authorization", `Basic ${dataParams.baseCredentials}`) }   //"Og==" is base64 encoding of anonymous credentials
+                //options
+                optionsObj.method = verb;
+                if (body) optionsObj.body = JSON.stringify(body);
+                optionsObj.mode = "same-origin";
+                //fetch
+                let logID = Logger.addAPILog(api, verb, body, headersObj, optionsObj);    //Log the API call
+                const source = await fetch(api, { optionsObj, headers: fetchHeaders });
+                const result = await source.json();
+                if (callbackFn !== undefined) callbackFn(result);
+                Logger.addAPIReturn(logID, result, source); //Log the API returned value
+            } catch (err) {
+                console.log("err: ", err);
+            }
+        }
+
+
+        /*************** Generic FHIR functions ***************/
+        //change FHIR servers
+        changeServer = () => {
+            //Update the credentials
+            dataParams.baseCredentials = btoa(`${FHIRRefByRef(dataParams.servers, "server", dataParams.baseURL, "un")}:${FHIRRefByRef(dataParams.servers, "server", dataParams.baseURL, "pw")}`);
+        }
+
+        //Populate list of FHIR servers
+        addItemToSelect = (selectID, itemsAr) => {
+            let sel = document.getElementById(selectID);
+            itemsAr.forEach(element => {
+                opt = document.createElement("option");
+                opt.text = element;
+                sel.add(opt);
+            });
+        };
+
+        //Find a name=value in a FHIR array, and return a given node within. (E.g. Find link["relation"]="next" and return the URL)
+        FHIRRefByRef = (ar, searchName, searchValue, getNode) => {
+            for (let i = 0; i < ar.length; i++) {
+                if (ar[i][searchName] == searchValue) {
+                    return ar[i][getNode];
+                    break;
+                }
+            }
+            return "";
+        }
+
+
+        /*************** Generic functions ***************/
+        //Update a CSS property. Optionally include a toggleVal, which will cause the CSS property to toggle between newVal and toggleVal
+        updateStyleRule = (selectorVal, property, newVal, toggleVal = null) => {
+            for (let i = 0; i < document.styleSheets.length; i++) {
+                let ss = document.styleSheets[i];
+                if (ss.ownerNode.toString() == "[object HTMLStyleElement]") {   //cannot operate on linked (external) stylesheets
+                    for (let j = 0; j < ss.cssRules.length; j++) {
+                        if (ss.cssRules[j].selectorText == selectorVal) {
+                            if (toggleVal) {
+                                let prop = ss.cssRules[j].style.getPropertyValue(property);
+                                ss.cssRules[j].style.setProperty(property, (prop == newVal ? toggleVal : newVal));
+                            } else {
+                                ss.cssRules[j].style.setProperty(property, newVal);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        //Add an element (default = <div>) to the document (default append to = <body>)
+        addHTMLel = (elID, className, appendTo = document.body, elType = "div") => {
+            const el = document.createElement(elType);
+            el.setAttribute('id', elID);
+            if (className) el.setAttribute('class', className);
+            appendTo.append(el);
+            return document.getElementById(elID);
+        }
+
+        //Page loaded functions
+        window.addEventListener('load', function () {
+            Logger = new abcLogger();
+            Logger.addTextLog("<img src='assets/img/sdh200.png' height=24 style='vertical-align: middle;'>&nbsp;&nbsp; API Monitor", "heading1", false);
+
+            changeServer();
+
+            //Sidepanel expand/contract. Atrribution: https://codepen.io/aydin4ik
+            $('.circle').click(function () {
+                let spWidth = $('.sidepanel').width();
+                let spMarginLeft = parseInt($('.sidepanel').css('margin-left'), 10);
+                let w = (spMarginLeft > 0) ? 0 : spWidth;
+                let cw = (w <= 0) ? -11 : -22;
+                $('.sidepanel').animate({
+                    marginLeft: w,
+                });
+                $('.circle').animate({
+                    left: cw
+                }, function () {
+                    $('.fa-chevron-left').toggleClass('hide');
+                    $('.fa-chevron-right').toggleClass('hide');
+                });
+            });
+
+            dqmPtList_render();
+        })
+
+
+        /*************** FHIR Grid functions ***************/
+        //Convert the result Bundle into a flat array that can be used by Tabulator
+        autoCompleteFHIRToArray = (data) => {
+            let res = {} //The current Resource within the Bundle returned from the server
+            let el = {} //The constructor element. A single resource transformed into a single row (element)
+            let ar = [] //The constuctor array. All the resources in the page to be appended (lazy load) to the fhirGrid
+            for (let key in data.entry) {
+                res = data.entry[key].resource
+                try {
+                    let identifier = JSON.stringify(fhirpath.evaluate(res, "Patient.identifier.type.coding.code.first() | ' (' + Patient.identifier.system.first() + '): ' | Patient.identifier.value.first() | ', others: [' + Patient.identifier.value.tail() + ']'"))
+                    identifier = identifier.replace(/\[\"/, "").replace(/\"\]/, "").replace(/\[\]/, "").replace(/\"\,\"/g, " ");
+                    el = {
+                        "id": res.id,
+                        "lname": res.name[0].family,
+                        "given": res.name[0].given.join(" "),
+                        "full": res.name[0].family + ", " + res.name[0].given.join(" ") || "",
+                        "dob": res.birthDate,
+                        "identifier": identifier
+                    };
+                    ar.push(el);
+                } catch { }
+            }
+            return ar
+        }
+
+        //Construct the fhirGridContainer
+        // var fhirGrid = new Tabulator("#fhirGridContainer", {
+        //     autoColumns: true,
+        //     height: getParam(fhirGridParams, fhirGridParams.template, "height"),
+        //     layout: "fitDataStretch",
+        //     placeholder: document.getElementById("fhirGridPlaceholder"),
+        //     placeholderEmpty: "Sorry, Eh. No results found.",
+        //     columns: getParam(fhirGridParams, fhirGridParams.template, "cols"),
+        // });
+
+        //Lazy load (grab next page on vertical scroll)
+        // fhirGrid.on("scrollVertical", function (top) {
+        //     // Add a small delay between lazy load attempts
+        //     if (fhirGridParams.loadDelay == 0) {
+        //         fhirGridParams.loadDelay = new Date().getTime();
+        //         console.log("Note: a fetch 'err:' may appear below. Ignore this error, it is due to scrolling triggering rapid pagination.")
+        //         loadPatients(fhirGridParams.pageURL);
+        //     } else {
+        //         // Add small delay before loading next page. (Even so, the server may still not be ready and throw an error. That's OK, just keep trying every 500ms)
+        //         if ((new Date().getTime() - fhirGridParams.loadDelay) > 500) fhirGridParams.loadDelay = 0;
+        //     }
+        // });
+
+    </script>
+</head>
+
+
+<body>
+
+    <div class="mockEMRContainer">
+        <!-- MockEMR Heading row -->
+        <div class="rowTitle">
+            <span class="headingTitle2" style="margin-left: 10px;">
+                </i> Demo <i class="fa fa-arrow-circle-right"></i> Clinical Reasoning <i class="fa fa-arrow-circle-right"></i> Care Gaps <i class="fa fa-recycle resetDemo"></i>
+            </span>
+            <span class="alignRight">
+                <span class="headingTitle">&nbsp;&nbsp;&nbsp;Mock EMR&nbsp;&nbsp;&nbsp;</span>
+                <img src="assets/img/sdh200.png" height="40">
+            </span>
+        </div>
+
+        <!-- MockEMR Main Body -->
+        <div class="rowBody">
+            <div class="bodyRow">
+                <!-- ********** START: Mock EMR Content ********** -->
+
+                <!-- START: Stepped Progress Bar -->
+                <div class="step-1" id="steppedProgressBar" data-current-step="1" style="top: 10px;">
+                    <div class="progress-bar">
+
+                        <div class="step step-1 active"><span> 1</span>
+                            <div class="fa fa-check opaque"></div>
+                            <div class="step-label"> Introduction</div>
+                        </div>
+                        <div class="step step-2"><span> 2</span>
+                            <div class="fa fa-check opaque"></div>
+                            <div class="step-label">
+                                Care Gap List
+                                <p class="spbSubHeading">
+                                    <i class="fa fa-user" style="width: 12px;"></i> Clinic Administrator<br>
+                                    <i class="fa fa-calendar" style="width: 12px;"></i> Today
+                                </p>
+                            </div>
+                        </div>
+                        <div class="step step-3"><span> 3</span>
+                            <div class="fa fa-check opaque"></div>
+                            <div class="step-label">
+                                Patient Encounter<br>
+                                <p class="spbSubHeading">
+                                    <i class="fa fa-user" style="width: 12px;"></i> Doctor<br>
+                                    <i class="fa fa-calendar" style="width: 12px;"></i> Today
+                                </p>
+                            </div>
+                        </div>
+                        <div class="step step-4"><span> 4</span>
+                            <div class="fa fa-check opaque"></div>
+                            <div class="step-label">
+                                Lab Requisition<br>
+                                <p class="spbSubHeading">
+                                    <i class="fa fa-user" style="width: 12px;"></i> Doctor<br>
+                                    <i class="fa fa-calendar" style="width: 12px;"></i> Today
+                                </p>
+                            </div>
+                        </div>
+                        <div class="step step-5"><span> 5</span>
+                            <div class="fa fa-check opaque"></div>
+                            <div class="step-label">
+                                Lab Test Performed<br>
+                                <p class="spbSubHeading">
+                                    <i class="fa fa-user" style="width: 12px;"></i> Patient<br>
+                                    <i class="fa fa-calendar" style="width: 12px;"></i> Today
+                                </p>
+                            </div>
+                        </div>
+                        <div class="step step-6"><span> 6</span>
+                            <div class="fa fa-check opaque"></div>
+                            <div class="step-label">
+                                Subsequent Pt Encounter<br>
+                                <p class="spbSubHeading">
+                                    <i class="fa fa-user" style="width: 12px;"></i> Doctor<br>
+                                    <i class="fa fa-calendar" style="width: 12px;"></i> +30 days
+                                </p>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <div id="spbContentContainer" style="position: relative; top: 100px;">
+                    <section id="spbSection1" class="spbSection1" style="display:block;">
+                        <div style="font-size: 18px; margin: 5px 20px 10px 20px;">
+                            <p>The Gaps in Care is a powerful report that when used along with other DEQM functionality can result in better care results for the payer, the provider, and most
+                                importantly the patient.</p>
+                            <p>This scenario starts with a Population Health Manager employing the Care Gap Work List tool to monitor the patient population for gaps in care. He/she identifies a
+                                patient with a gap related to the Colorectal Cancer Screening Quality Measure and schedules a visit for the patient.</p>
+                            <p>During the patient visit the Digital Quality Measures module requests a gaps in care report from the payer. The clinician is notified of the resulting gap in care and
+                                the Clinical Decision Support module provides the clinician with a recommendation for how to address the gap based on the American Cancer Society Guideline for
+                                Colorectal
+                            <p>Cancer Screening. The clinician chooses to follow the recommendation and orders the associated procedure.</p>
+                            <p>Once the procedure has been completed the Digital Quality Measure module submits the new quality data to the payer.</p>
+                            <p>During a subsequent patient visit the Digital Quality Measure module requests a new gaps in care report from the payer, which then shows the gap has been closed.</p>
+                            <input type="button" class="button" value="Start Care Gaps Demo" onclick="spbNext(); Logger.addTextLog('Care Gap Demo Started')">
+                        </div>
+                    </section>
+
+                    <section id="spbSection2" class="spbSection2" style="display:none;">
+
+                        <div id="dqmPtList" style="margin: 20px; text-align: center; font-size: 18px; color: #d0d0d0; font-weight:bold;">Retrieving Care Gaps...</div>
+                        <script>
+                            var tabledata = [
+                                { id: 1, name: "Vivian Singh", age: "12", col: "Colorectal Cancer Screening", dob: "22/05/2023" },
+                                { id: 2, name: "Mary May", age: "1", col: "blue", dob: "14/05/1982" },
+                                { id: 3, name: "Christine Lobowski", age: "42", col: "green", dob: "22/05/1982" },
+                                { id: 4, name: "Brendon Philips", age: "125", col: "orange", dob: "01/08/1980" },
+                                { id: 5, name: "Margret Marmajuke", age: "16", col: "yellow", dob: "31/01/1999" },
+                            ];
+
+                            var dqmPtList;
+                            dqmPtList_render = () => {
+                                dqmPtPlist = new Tabulator("#dqmPtList", {
+                                    height: 305, // set height of table (in CSS or here), this enables the Virtual DOM and improves render speed dramatically (can be any valid css height value)
+                                    data: tabledata, //assign data to table
+                                    layout: "fitColumns", //fit columns to width of table (optional)
+                                    columns: [ //Define Table Columns
+                                        { title: "Name", field: "name", hozAlign: "left" },
+                                        { title: "Care Gap", field: "col" },
+                                        { title: "Days open", field: "age" },
+                                        { title: "Next Appointment", field: "dob", sorter: "date", hozAlign: "center" },
+                                    ],
+                                });
+
+                                //trigger an alert message when the row is clicked
+                                dqmPtPlist.on("rowClick", function (e, row) {
+                                    spbNext();
+                                    Logger.addTextLog("Row " + row.getData().id + " clicked");
+                                });
+                            }
+                        </script>
+
+
+                        <br><br><br><br><br>
+                        Simple GET API: <input id="emrSimpleGET" type="text" value="Patient">
+                        <input type="button" value="GET" onclick="APICall(getElementById('emrSimpleGET').value, function (ret) {
+                                console.log(ret);
+                            })">
+                        <br><br>
+                        <input type="button" value="Toggle compression" onclick='updateStyleRule(".abcAPIContainer li.jsonValAr, .abcAPIContainer li.jsonValObj", "white-space", "pre", "normal")'>
+                        <br><br>
+                        Log Text: <input id="logText" type="text" value="" placeholder="type some stuff here">
+                        &nbsp;&nbsp;Class: <input id="logClass" type="text" value="" placeholder="text, heading1">
+                        <input type="button" value="Add me to the log" onclick="Logger.addTextLog(getElementById('logText').value, getElementById('logClass').value)">
+                        <br><br>
+                    </section>
+
+                    <section id="spbSection3" class="spbSection3" style="display:none;">
+                        <p>Patient Encounter</p>
+                        <input type="button" class="button" value="[[Click on an open care gap]]" onclick="spbNext(); Logger.addTextLog('Caregap/1234 selected [Colorectal screening]')">
+                    </section>
+
+                    <section id="spbSection4" class="spbSection4" style="display:none;">
+                        <p>Lab Requisition</p>
+                        <input type="button" class="button" value="[[Submit Lab Req]]" onclick="spbNext(); Logger.addTextLog('Caregap/1234 selected [Lab Req requested]')">
+                    </section>
+
+                    <section id="spbSection5" class="spbSection5" style="display:none;">
+                        <p>Between Encounters: Labs performed, and results returned to clinic (automatically), and care gaps updated (automatically)</p>
+                        <input type="button" class="button" value="[[Click on Submit Labs]]"
+                            onclick="spbNext(); Logger.addTextLog('Caregap/1234 selected [Labs ordered, Lab results returned, Care Gaps updated]')">
+                    </section>
+
+                    <section id="spbSection6" class="spbSection6" style="display:none;">
+                        <p>Subsequent (follow-up) Encounter</p>
+                        <i>Click the reset demo button again to restart this demo</i>
+                    </section>
+                </div>
+                <!-- END: Stepped Progress Bar -->
+
+
+                <!-- ********** END: Mock EMR Content ********** -->
+            </div>
+        </div>
+
+        <!-- MockEMR Footer row -->
+        <div id="mockEMRFooter" class="rowFooter">&nbsp;Care Gaps</div>
+    </div>
+
+    <!-- START: Sidepanel -->
+    <div class="sidepanelContainer">
+        <div class="sidepanel">
+            <div id="abcLogger" class="abcAPIContainer"></div>
+            <div class="circle">
+                <i class="fa fa-chevron-left" aria-hidden="true"></i>
+                <i class="fa fa-chevron-right hide" aria-hidden="true"></i>
+            </div>
+        </div>
+    </div>
+    <!-- END: Sidepanel -->
+
+</body>
+
+
+<!--   Core JS Files   -->
+<script src="https://code.jquery.com/jquery-3.6.1.min.js" integrity="sha256-o88AwQnZB+VDvE9tvIXrMQaPlFFSUTR+nldQm1LuPXQ=" crossorigin="anonymous"></script>
+
+<!--  Logger  -->
+<script src="assets/js/logger.js"></script>
+
+<!--  JSON Viewer  -->
+<script src="assets/js/jquery.json-viewer.js"></script>
+
+<!--  Stepped Progress Bar  -->
+<script src="assets/js/steppedProgress.js"></script>
+
+<!-- Tabulator (fhirGrid) -->
+<script type="text/javascript" src="https://unpkg.com/tabulator-tables/dist/js/tabulator.min.js"></script>
+
+<!-- FHIRPath (dependency of fhirGrid)-->
+<!-- <script src="assets/js/fhirpath.min.js"></script>
+<script src="assets/js/fhirpath.r4.min.js"></script> -->
+
+</html>

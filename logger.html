@@ -1,0 +1,419 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <title>Logger</title>
+
+    <!-- Favicons -->
+    <link rel="apple-touch-icon" sizes="180x180" href="assets/favicon/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="assets/favicon/favicon-16x16.png">
+
+    <!--  Fonts and icons -->
+    <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/font-awesome/latest/css/font-awesome.min.css" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Material+Icons" />
+    <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+    <!--  Logger  -->
+    <link rel="stylesheet" type="text/css" href="assets/css/logger.css" />
+
+    <!--  JSON Viewer  -->
+    <link rel="stylesheet" type="text/css" href="assets/css/jquery.json-viewer.css" />
+
+    <style>
+        body {
+            font-family: "Lato", sans-serif;
+            margin: 0px;
+            padding: 0px;
+        }
+
+        /* .mockEMR = the mock EMR */
+        .mockEMRContainer {
+            display: flex;
+            flex-flow: column;
+            height: 100vh;
+            overflow: auto;
+            box-sizing: border-box;
+        }
+
+        .mockEMRContainer pre,
+        .mockEMRContainer span,
+        .mockEMRContainer div {
+            /* Set width to 1 for debugging */
+            border: 0px solid #0f0;
+            box-sizing: border-box;
+        }
+
+        .mockEMRContainer .rowTitle {
+            min-height: 40px;
+            background: #8ac;
+            display: flex;
+            align-items: center;
+            filter: drop-shadow(0px 1px 2px #000);
+        }
+
+        .mockEMRContainer .rowTitle .alignRight {
+            margin-left: auto;
+            margin-right: 20px;
+            display: flex;
+            align-items: center;
+        }
+
+        .mockEMRContainer .headingTitle {
+            font: oblique bold 24px arial;
+            color: #fff;
+            filter: drop-shadow(0px 0px 2px #000);
+        }
+
+        .mockEMRContainer .headingTitle2 {
+            font: bold 16px arial;
+            color: #fff;
+        }
+
+        .mockEMRContainer .rowBody {
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+            margin: 5px 5px 0px 5px;
+        }
+
+        .mockEMRContainer .rowFooter {
+            font: 14px arial;
+            color: #fff;
+            background: #8ac;
+            filter: drop-shadow(0px 1px 2px #000);
+        }
+
+        .mockEMRContainer .bodyRow {
+            width: 100%;
+            height: 100%;
+            background-color: #fff;
+        }
+
+        .mockEMRContainer .bodyRow .emr {
+            width: 60%;
+            height: 100%;
+            background-color: #cef;
+        }
+
+        .mockEMRContainer .bodyRow .abcAPIContainer {
+            flex: 1;
+            overflow: auto;
+            height: 100%;
+        }
+
+        .mockEMRContainer .resetDemo {
+            color: rgba(0, 0, 0, 0.3);
+            cursor: pointer;
+        }
+
+        .tempServerSelect {
+            background-color: #e9ecef;
+            border: 1px solid #ced4da;
+            border-radius: 3px;
+            padding: 0px;
+        }
+    </style>
+
+    <script>
+        /*************** Global Data Parameters ***************/
+        let dataParams = {
+            servers: [{ //credentials: fill in if you wish (obviously INSECURE!!!), leave blank for anonymous / to be prompted in webGUI
+                "server": "http://localhost:8000/",
+                un: "admin",
+                pw: "password"
+            }, {
+                "server": "https://hapi.fhir.org/baseR4/",
+                un: "",
+                pw: ""
+            }, {
+                "server": "https://try.smilecdr.com/baseR4/",
+                un: "",
+                pw: ""
+            }],
+            baseURL: "",
+            baseCredentials: "",
+        };
+        dataParams.baseURL = dataParams.servers[1].server;
+
+        //Get the parameter value from the subsection first; otherwise get it from the root
+        getParam = (paramList, section, param) => {
+            return paramList[section][param] || paramList[param]
+        }
+
+
+        /*************** abcLogger ***************/
+        class abcLogger {
+            /*******************************************
+                Adam Cole
+                Similar to console logging, but does so in the browser window, and with a bunch of customizations:
+                addAPILog()       Logs an API call and the corresponding response
+                addTextLog()      Logs simple text (HTML)
+                addHeadingLog()   Logs a formatting heading
+
+                To do:
+                - allow changing of the class of the title (currently steel blue), so that different servers (payer, provider) can be visually distinguished
+                - Handle addAPILog body, headers, options; currently they are ignored
+            *******************************************/
+            constructor() {
+                this.abcAPIParams = {
+                    options: {
+                        collapsed: true,
+                        rootCollapsable: true,
+                        withQuotes: true,
+                        withLinks: true,
+                    }
+                };
+                this._logID = 0;  //incremeneted every time a new item is added to the log
+                this._loggerTimers = [];    //<0 and the API has returned; >0 is the ms the API has been running
+            }
+
+            //Create a new log
+            newLog = (className) => {
+                this._logID++;
+                return addHTMLel("loggerTitleRow" + this._logID, className, document.getElementById("abcLogger"));
+            }
+
+            //Add a text (HTML) log. Optional: className
+            addTextLog = (text, className) => {
+                if (!className) className = "text";
+                const el = this.newLog(className);
+                el.innerHTML = text;
+                addHTMLel("", "apiSpacer", document.getElementById("abcLogger"), "div");
+                return this._logID;
+            }
+
+            //Add an API log. Usage with fetch: let logID = Logger.addAPILog(api, verb); await fetch(...); Logger.addAPIReturn(logID, result, source);
+            addAPILog = (API, verb, body, headers, options) => {
+                const el = this.newLog("title");
+                if (!verb) verb = "GET";
+                verb = verb.toLocaleUpperCase();
+                let s = `<span class="titleLeft">
+                        &nbsp;<br>&nbsp;
+                    </span><span class="titleCenter">
+                        <i class="fa fa-arrow-right" aria-hidden="true"></i> <i class="fa fa-server" aria-hidden="true"></i> <span class="title${verb}">${verb}</span>
+                        <a href="${API}" target="_blank">${API}</a><br>
+                        <i class="fa fa-arrow-left" aria-hidden="true"></i> <i class="fa fa-server" aria-hidden="true"></i>
+                        <span id="loggerResponse${this._logID}">
+                            <img src="assets/img/spinner6.gif" height=20 style="margin-top: 4px; margin-bottom: -5px">
+                            <span id="loggerTimer${this._logID}"></span>
+                        </span>
+                    </span><span class="titleRight">
+                        &nbsp;<br>&nbsp;
+                    </span>`;
+                el.innerHTML = s;
+                //add API timer
+                this._loggerTimers[this._logID] = performance.now();
+                this.apiTimer(this._logID);
+                // add container to show API results (when the API returns)
+                let elID = "json-renderer" + this._logID;
+                addHTMLel(elID, "json-editor-blackbord", document.getElementById("abcLogger"), "div");
+                addHTMLel("", "apiSpacer", document.getElementById("abcLogger"), "div");
+                return this._logID;
+            }
+
+            //Add the API results to the log
+            addAPIReturn = (logID, result, source) => {
+                const ms = Math.trunc(performance.now() - this._loggerTimers[logID]);
+                this._loggerTimers[logID] = -1; //stop the API timer
+                $(`#json-renderer${logID}`).jsonViewer(result, this.abcAPIParams.options);
+                document.getElementById(`loggerResponse${logID}`).innerHTML = `${source.status != 200 ? "<img src='assets/img/error.png' height=20 style='margin-top: 5px;margin-bottom: -5px;''> " : ""} ${source.status} ${source.statusText}, ${ms}ms`;
+            }
+
+            //Display a timer on the API return row showing how long the API has been running
+            apiTimer = (logID) => {
+                const t0 = this._loggerTimers[logID];
+                const ms = Math.trunc(performance.now() - t0);
+                if (t0 > 0) {
+                    //API still running
+                    document.getElementById("loggerTimer" + logID).innerHTML = ms + "ms";
+                    setTimeout(() => {
+                        this.apiTimer(logID);
+                    }, 100);
+                }
+            }
+
+        }   //abcLogger
+        let Logger = new abcLogger();
+
+
+        /*************** Remote Server Operations (previously AJAX) ***************/
+        //async/await fetch (i.e. Promise AJAX). apiPath = everything after the domain (e.g. Patient/123). callbackfn e.g.: function(data){console.log(data)}
+        //   verb is optional, default = GET. body is optional. headersObj is optional, e.g. {"Content-Type": "text/plain",}. optionsObj is optional, e.g. {mode: "cors",}
+        async function APICall(apiPath, callbackFn, verb, body, headersObj, optionsObj) {
+            try {
+                if (!verb) verb = "GET";
+                if (!optionsObj) optionsObj = {};
+                let api = dataParams.baseURL + apiPath;
+                //headers
+                let fetchHeaders = new Headers(
+                    headersObj
+                );
+                if (dataParams.baseCredentials != "Og==") { fetchHeaders.append("Authorization", `Basic ${dataParams.baseCredentials}`) }   //"Og==" is base64 encoding of anonymous credentials
+                //options
+                optionsObj.method = verb;
+                if (body) optionsObj.body = JSON.stringify(body);
+                //fetch
+                let logID = Logger.addAPILog(api, verb, body, headersObj, optionsObj);    //Log the API call
+                const source = await fetch(api, { optionsObj, headers: fetchHeaders });
+                const result = await source.json();
+                if (callbackFn !== undefined) callbackFn(result);
+                Logger.addAPIReturn(logID, result, source); //Log the API returned value
+            } catch (err) {
+                console.log("err: ", err);
+            }
+        }
+
+
+        /*************** Generic FHIR functions ***************/
+        //change FHIR servers
+        changeServer = () => {
+            //Update the credentials
+            dataParams.baseCredentials = btoa(`${FHIRRefByRef(dataParams.servers, "server", dataParams.baseURL, "un")}:${FHIRRefByRef(dataParams.servers, "server", dataParams.baseURL, "pw")}`);
+        }
+
+        //Populate list of FHIR servers
+        addItemToSelect = (selectID, itemsAr) => {
+            let sel = document.getElementById(selectID);
+            itemsAr.forEach(element => {
+                opt = document.createElement("option");
+                opt.text = element;
+                sel.add(opt);
+            });
+        };
+
+        //Find a name=value in a FHIR array, and return a given node within. (E.g. Find link["relation"]="next" and return the URL)
+        FHIRRefByRef = (ar, searchName, searchValue, getNode) => {
+            for (let i = 0; i < ar.length; i++) {
+                if (ar[i][searchName] == searchValue) {
+                    return ar[i][getNode];
+                    break;
+                }
+            }
+            return "";
+        }
+
+
+        /*************** Generic functions ***************/
+        //Update a CSS property. Optionally include a toggleVal, which will cause the CSS property to toggle between newVal and toggleVal
+        updateStyleRule = (selectorVal, property, newVal, toggleVal = null) => {
+            for (let i = 0; i < document.styleSheets.length; i++) {
+                let ss = document.styleSheets[i];
+                if (ss.ownerNode.toString() == "[object HTMLStyleElement]") {   //cannot operate on linked (external) stylesheets
+                    for (let j = 0; j < ss.cssRules.length; j++) {
+                        if (ss.cssRules[j].selectorText == selectorVal) {
+                            if (toggleVal) {
+                                let prop = ss.cssRules[j].style.getPropertyValue(property);
+                                ss.cssRules[j].style.setProperty(property, (prop == newVal ? toggleVal : newVal));
+                            } else {
+                                ss.cssRules[j].style.setProperty(property, newVal);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        //Add an element (default = <div>) to the document (default append to = <body>)
+        addHTMLel = (elID, className, appendTo = document.body, elType = "div") => {
+            const el = document.createElement(elType);
+            el.setAttribute('id', elID);
+            if (className) el.setAttribute('class', className);
+            appendTo.append(el);
+            return document.getElementById(elID);
+        }
+
+        //Page loaded functions
+        window.addEventListener('load', function () {
+            //Populate the list of FHIR servers
+            // Not utilized as the server is hardcoded for this demo
+            (() => {
+                // let t = [];
+                // for (const el of dataParams.servers) { t.push(el.server) }
+                // addItemToSelect("FHIRServer", t);
+                // //Update the dropdown to match baseURL
+                // document.getElementById('FHIRServer').value = dataParams.baseURL;
+                changeServer();
+            })()
+
+            Logger.addTextLog("<img src='assets/img/sdh200.png' height=24 style='vertical-align: middle;'>&nbsp;&nbsp; API Monitor", "heading1");
+
+            //Sidepanel expand/contract. Atrribution: https://codepen.io/aydin4ik
+            $('.circle').click(function () {
+                let spWidth = $('.sidepanel').width();
+                let spMarginLeft = parseInt($('.sidepanel').css('margin-left'), 10);
+                let w = (spMarginLeft > 0) ? 0 : spWidth;
+                let cw = (w <= 0) ? -11 : -22;
+                $('.sidepanel').animate({
+                    marginLeft: w,
+                });
+                $('.circle').animate({
+                    left: cw
+                }, function () {
+                    $('.fa-chevron-left').toggleClass('hide');
+                    $('.fa-chevron-right').toggleClass('hide');
+                });
+            });
+
+        })
+    </script>
+</head>
+
+
+<body>
+
+    <div class="mockEMRContainer">
+        <div class="rowTitle">
+            <span class="headingTitle2" style="margin-left: 10px;">
+                <!-- Select FHIR server; Rem'd out as it is hardcoded for this demo -->
+                <!-- FHIR Server:
+                <select class="tempServerSelect" id="FHIRServer" onChange="dataParams.baseURL=this.value; changeServer();"></select> -->
+                <i class="fa fa-recycle resetDemo"></i> Demo <i class="fa fa-arrow-circle-right"></i> Clinical Reasoning <i class="fa fa-arrow-circle-right"></i> Care Gaps
+            </span>
+            <span class="alignRight">
+                <span class="headingTitle">&nbsp;&nbsp;&nbsp;Mock EMR&nbsp;&nbsp;&nbsp;</span>
+                <img src="assets/img/sdh200.png" height="40">
+            </span>
+        </div>
+        <div class="rowBody">
+            <div class="bodyRow">
+
+                <b>EMR Container</b></br></br>
+                Simple GET API: <input id="emrSimpleGET" type="text" value="Patient">
+                <input type="button" value="GET" onclick="APICall(getElementById('emrSimpleGET').value, function (ret) {
+                        console.log(ret);
+                    })">
+                <br><br>
+                <input type="button" value="Toggle compression" onclick='updateStyleRule(".abcAPIContainer li.jsonValAr, .abcAPIContainer li.jsonValObj", "white-space", "pre", "normal")'>
+                <br><br>
+                Log Text: <input id="logText" type="text" value="" placeholder="type some stuff here">
+                &nbsp;&nbsp;Class: <input id="logClass" type="text" value="" placeholder="text, heading1">
+                <input type="button" value="Add me to the log" onclick="Logger.addTextLog(getElementById('logText').value, getElementById('logClass').value)">
+                <br><br>
+
+            </div>
+        </div>
+        <div id="mockEMRFooter" class="rowFooter">&nbsp;Care Gaps</div>
+    </div>
+
+    <!-- START: Sidepanel -->
+    <div class="sidepanelContainer">
+        <div class="sidepanel">
+            <div id="abcLogger" class="abcAPIContainer"></div>
+            <div class="circle">
+                <i class="fa fa-chevron-left" aria-hidden="true"></i>
+                <i class="fa fa-chevron-right hide" aria-hidden="true"></i>
+            </div>
+        </div>
+    </div>
+    <!-- END: Sidepanel -->
+
+</body>
+
+
+<!--   Core JS Files   -->
+<script src="https://code.jquery.com/jquery-3.6.1.min.js" integrity="sha256-o88AwQnZB+VDvE9tvIXrMQaPlFFSUTR+nldQm1LuPXQ=" crossorigin="anonymous"></script>
+<!--  JSON Viewer  -->
+<script src="assets/js/jquery.json-viewer.js"></script>
+
+</html>

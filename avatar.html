@@ -1,0 +1,514 @@
+<html>
+
+<head>
+    <style>
+         :root {
+            --windowWidth: 1000px;
+            --windowHeight: 1000px;
+            --actorLeft: .25;
+            --actorTop: .5;
+            --actorWidth: 0px;
+            --actorHeight: 0px;
+            --animationDuration: 1000ms;
+        }
+        
+        .abcAvatar .wingsuit {
+            --bkg: #f7b125;
+            --fontClr: #222;
+            --borderClr: #fff;
+            --dark1: #e19600;
+            --dark2: #cd8b23;
+            --bright1: #fec552;
+            --bright2: #f9dda5;
+            --highlight: #ebff00;
+            /* msgWidth = Bound box width less 20 for padding and borders*/
+            --msgWidth: 380px;
+            --msgRelHorizontal: 0px;
+            --msgRelVertical: 0px;
+            --imgWidth: 100px;
+            --imgHeight: auto;
+            --imgRelHorizontal: 0px;
+            --imgRelVertical: -18px;
+            --card2VertOffset: -8px;
+            --card3VertOffset: -20px;
+        }
+        
+        .abcAvatar .mountaineer {
+            --bkg: linear-gradient(127deg, rgba(103, 200, 223, .99) 0%, rgba(29, 253, 235, 0.92) 40%, rgba(42, 183, 184, 1) 100%);
+            --fontClr: #222;
+            --borderClr: #77f8ff;
+            --dark1: #21cfff;
+            --dark2: #00b5e8;
+            --bright1: #52f6ff;
+            --bright2: #77f8ff;
+            --highlight: #00c8ff;
+            --msgWidth: 380px;
+            /* msgWidth = Bound box width less 20 for padding and borders*/
+            --msgRelHorizontal: 0px;
+            --msgRelVertical: 10px;
+            --imgWidth: 50px;
+            --imgRelHorizontal: -500px;
+            --imgRelVertical: -2170px;
+            --card2VertOffset: -20px;
+            --card3VertOffset: -30px;
+        }
+        /*
+            .abcAvatar 👇 */
+        
+        .abcAvatar {
+            font: normal 14px Arial, Helvetica, sans-serif;
+            position: absolute;
+            width: auto;
+            height: auto;
+            /* max-width: calc(100% - 200px);
+            max-height: 150px;
+            /* Comment out a side (below) to align to the opposite side */
+            left: 0;
+            right: 0;
+            /* bottom: 0; */
+            /* top: 0; */
+            margin: auto;
+            border: 1px solid #f00;
+            /* transition: var(--animationDuration) ease-in-out; */
+            /* left: 0px; */
+        }
+        /*
+            Message Box 👇 */
+        
+        .abcAvatar .msgBox {
+            position: absolute;
+            top: var(--msgRelVertical);
+            left: var(--msgRelHorizontal);
+            width: var(--msgWidth);
+            border-radius: 10px;
+            border-width: 2px;
+            border-style: solid;
+            padding: 3px 8px 3px 8px;
+            font-size: 16px;
+            color: var(--fontClr);
+            border-color: var(--borderClr);
+            background: var(--bkg);
+        }
+        
+        .abcAvatar .msgHeader {
+            font-weight: bold;
+            font-size: 16px;
+            margin-top: 4px;
+        }
+        
+        .abcAvatar .msgDivider {
+            width: 80%;
+            margin: 4px 5% 4px 5%;
+            border-top: 1px solid var(--dark1);
+            border-bottom: 1px solid var(--bright1);
+            text-align: center;
+        }
+        
+        .abcAvatar .msgBody {
+            font: 14px Arial, sans-serif;
+            color: var(--fontClr);
+            height: 50px;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+        
+        .abcAvatar .msgContainerClose {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: var(--bright2);
+            color: var(--dark2);
+            border: 2px solid var(--bkg);
+            height: 16px;
+            width: 16px;
+            border-radius: 8px;
+            text-align: center;
+            font: 14px Arial, sans-serif;
+            z-index: 2;
+        }
+        
+        .abcAvatar .msgContainerClose:hover {
+            cursor: pointer;
+        }
+        
+        .abcAvatar .msgContainerTimer {
+            position: absolute;
+            top: 0px;
+            left: 4px;
+            background: var(--highlight);
+            height: 4px;
+            width: 100%;
+            border-radius: 2px;
+            visibility: hidden;
+        }
+        
+        .abcAvatar .msgStack {
+            z-index: -1;
+            position: absolute;
+            bottom: var(--msgRelVertical);
+            left: var(--msgRelHorizontal);
+            width: var(--msgWidth);
+            bottom: var(--card2VertOffset);
+            left: 0;
+            right: 0;
+            margin: auto;
+            width: 90%;
+            height: 30;
+            border-radius: 10px;
+            background: var(--dark1);
+            border: 1px solid var(--bkg);
+        }
+        
+        .abcAvatar .msgStack2 {
+            z-index: -2;
+            bottom: var(--card3VertOffset);
+            width: 80%;
+            background: var(--dark2);
+        }
+        /*
+            Avatar 👇 */
+        
+        .abcAvatar .avatarBox {
+            position: absolute;
+            top: var(--imgRelVertical);
+            left: var(--imgRelHorizontal);
+            width: var(--imgWidth);
+            height: var(--imgHeight);
+            right: 0;
+            margin: auto;
+        }
+        
+        .abcAvatar .avatarImg {
+            width: var(--imgWidth);
+            height: var(--imgHeight);
+        }
+        /*
+            Animations 👇 */
+        
+        @keyframes actorStartPos {
+            100% {
+                transform: translate(calc( (var(--windowWidth) - var(--actorWidth)) * var(--actorLeft)), calc( (var(--windowHeight) - var(--actorHeight)) * var(--actorTop)));
+                opacity: 0.1;
+            }
+        }
+        
+        @keyframes example {
+            /* 0% {
+                transform: translate(0px, 0px);
+                opacity: 0;
+            }
+            50% {
+                transform: translate(0px, -50px) scale(2.25);
+            } */
+            100% {
+                transform: translate(100px, -100px) scale(1);
+                opacity: 1;
+            }
+        }
+        
+        .actorStartPos {
+            animation: actorStartPos var(--animationDuration) forwards ease-out;
+        }
+        
+        .actorEntrance {
+            animation: example var(--animationDuration) forwards ease-out;
+        }
+    </style>
+
+    <script>
+        class abcAnimationLibrary {
+            /*******************************************
+                Adam Cole
+            *******************************************/
+            constructor() {
+                // this.actorID = ""; //The DOM elementID of the target (the object being animated)
+            }
+
+            async animate(actorID) {
+                this.setCSSVars();
+                const actor = document.getElementById(actorID);
+                let x = ((window.innerWidth - actor.getBoundingClientRect().width) * .5);
+                await this.setCSSProperty(actor, "left", x + "px");
+                console.log("12. >>", actor)
+                    // document.getElementById("forced halt").innerHTML = "****************************************"
+
+                await this.addTransition(actor, {
+                    left: "400px",
+                }, 1000);
+                x = actor.getBoundingClientRect().left;
+                x += -250;
+                console.log("x+= >>", x)
+                await this.addTransition(actor, {
+                    left: x + "px",
+                }, 5000);
+
+            }
+
+            //Set CSS variables such as window width and height
+            setCSSVars = () => {
+                const root = document.documentElement;
+                this.setCSSVar("windowWidth", window.innerWidth);
+                this.setCSSVar("windowHeight", window.innerHeight);
+            }
+
+            //Set a single CSS variable
+            setCSSVar = (varName, val, unit = "px") => {
+                const root = document.documentElement;
+                root.style.setProperty(`--${varName}`, val + unit);
+            }
+
+            //Set a CSS property; used specifically to position an element to it's starting position.
+            setCSSProperty = (el, prop, val, noTransition = true) => {
+                return new Promise((resolve, reject) => {
+                    el.style.setProperty(prop, val);
+                    el.offsetTop; //Force synchronous reflow. (Otherwise the Event Loop processes the next transition before the display is updated)
+                    resolve(el);
+                });
+            }
+
+            //Apply a transition rule. A durationMs of 0 is ignored and the default duration value is used. (For an instantaneous transition use 1; 0 doesn't behave as a transitiion; opacity=0 to avoid jitter)
+            addTransition = (el, styleProps, durationMs = 0) => {
+                console.log("14. >>", el)
+                return new Promise((resolve, reject) => {
+                    function handleTransitionEnd() {
+                        console.log("Transition Ended...");
+                        resolve(el);
+                    }
+                    el.addEventListener("transitionend", handleTransitionEnd, {
+                        once: true
+                    });
+                    if (durationMs > 0) el.style.setProperty("transition", `${durationMs}ms`);
+                    Object.entries(styleProps).forEach(([prop, value]) => {
+                        el.style.setProperty(prop, value);
+                    });
+                });
+            }
+
+            // common function to apply animations to an element.
+            addAnimation = (el, animation) => {
+                return new Promise((resolve, reject) => {
+                    function handleAnimationEnd() {
+                        console.log(`>> ${animation} animation ended`);
+                        resolve(el);
+                    }
+                    el.addEventListener("animationend", handleAnimationEnd, {
+                        once: true
+                    });
+                    el.classList.add(animation);
+                });
+            }
+        }
+
+        class abcAvatar {
+            /*******************************************
+                Adam Cole
+                abcAvatar displays an avatar and message (toast)
+                Avatars are PNG in assets/img
+
+                instanceName is the variable on the left side of the constructor. E.g.: Avatar = new abcAvatar([parameters])
+                (This is painful, but I don't know how to get the instance name which is needed for dynamic content)
+                As a class, abcAvatar can be instantiated multiple times.
+            *******************************************/
+            constructor(instanceName = "Avatar", avatar = "wingsuit", animationLibrary) {
+                this.instanceName = instanceName;
+                this.avatar = avatar;
+                this.AL = animationLibrary; //The instance name of the abcAnimationLibrary class
+                this.queue = []; //queue of msgs
+                this.tick = 25; //ms delay between progressBar updates
+                this._avatarVisible = false; //set to true when the first message is displayed, and false when the last message disappears
+                this._hover = false; //pause the timer when hovering
+            }
+
+            //Add a msg to the queue, then call displayNext
+            msg(msg, title, delayMs = 5000, icon) {
+                delayMs = (delayMs) ? delayMs : 5000;
+                this.queue.push(arguments);
+                this.displayMsg();
+            }
+
+            //Display the next message from the queue
+            displayMsg() {
+                if (this._avatarVisible) {
+                    this.displayStack();
+                } else {
+                    this.makeAvatarVisible();
+                }
+            }
+
+            //FIFO
+            dequeue() {
+                let args = this.queue.shift()
+                this.message = args[0];
+                this.title = args[1];
+                this.delayMs = args[2];
+                this.icon = args[3];
+            }
+
+            //Initial display of the avatar and first message to the window
+            makeAvatarVisible() {
+                this._avatarVisible = true;
+                this.createContainer(`abcToast${this.instanceName}`, `abcAvatar`);
+                this.createContainer(`abcAvatar${this.instanceName}`, `abcAvatar`);
+                this.dequeue();
+                this.msgBox();
+                this.avatarBox();
+                this.addCountdownToMsgBox();
+            }
+
+            //Avatar is already visible; display next message
+            displayNextMsg() {
+                this.dequeue();
+                this.msgBox();
+                this.displayStack();
+                this.addCountdownToMsgBox();
+            }
+
+            //Add cards behind the current message box to visually indicate there are more messages in the queue
+            displayStack() {
+                if (this.queue.length == 1 && !document.getElementById(`abcAvatarMsgStack${this.instanceName}`)) {
+                    document.getElementById(`abcAvatar${this.instanceName}`).innerHTML += `<div id="abcAvatarMsgStack${this.instanceName}" class="msgBox ${this.avatar} msgStack"></div>`;
+                }
+                if (this.queue.length == 2 && !document.getElementById(`abcAvatarMsgStack2${this.instanceName}`)) {
+                    document.getElementById(`abcAvatar${this.instanceName}`).innerHTML += `<div id="abcAvatarMsgStack2${this.instanceName}" class="msgBox ${this.avatar} msgStack msgStack2"></div>`;
+                }
+            }
+
+            //Add a <div> to the <body>
+            createContainer(divID, className) {
+                const el = document.createElement('div');
+                el.setAttribute('id', divID);
+                if (className) el.setAttribute('class', className);
+                document.body.append(el);
+            }
+
+            //Generate the message box
+            msgBox() {
+                let s = `<div id="abcAvatarMsgBox${this.instanceName}" class="msgBox ${this.avatar}">
+                    ${this.msgContents()}
+                    <div id="abcAvatarMsgContainerTimer${this.instanceName}" class="msgContainerTimer"></div>
+                    <div id="abcAvatarMsgContainerClose${this.instanceName}" class="msgContainerClose" onClick="${this.instanceName}.vanishMsg()">X</div>
+                </div>`;
+                document.getElementById(`abcToast${this.instanceName}`).innerHTML += s;
+            }
+
+            //Generate the avatar
+            avatarBox() {
+                if (this.avatar) {
+                    let s = `<div id="abcAvatarAvatarBox${this.instanceName}" class="avatarBox ${this.avatar}">
+                    <img src="assets/img/${this.avatar}.png" class="avatarImg"></div>`;
+                    document.getElementById(`abcAvatar${this.instanceName}`).innerHTML += s;
+                }
+                this.waitOnDOM();
+            }
+
+            //This one took me a while to figure out. The getBoundingClientRect() does not obtain its values from the DOM instantly. On my older PC it takes 8ms
+            waitOnDOM(fn) {
+                setTimeout(() => {
+                    if (document.getElementById("abcAvatarAvatarBoxAvatar").getBoundingClientRect().height == 0) {
+                        this.waitOnDOM();
+                    } else {
+                        this.AL.animate(`abcAvatar${this.instanceName}`);
+                    }
+                }, 5);
+            }
+
+            //Generate the message contents
+            msgContents() {
+                if (this.icon) {
+                    this.icon = `<span><img style="width:20px; height:20px; vertical-align:middle;" src="assets/img/${this.icon}.png"></span>&nbsp;`;
+                }
+                let s = "";
+                if (this.title) s += `<div class="msgHeader">${this.icon}${this.title}</div>`;
+                if (this.title && this.message) s += `<hr class="msgDivider">`;
+                if (this.message) s += `<div class="msgBody">${this.message}</div>`;
+                return s;
+            }
+
+            //Show a countdown timer in the message box - as long as delayMS>0
+            addCountdownToMsgBox() {
+                if (this.delayMs) {
+                    this._hover = false;
+                    document.getElementById(`abcAvatarMsgBox${this.instanceName}`).addEventListener("mouseover", () => {
+                        this._hover = true
+                    });
+                    document.getElementById(`abcAvatarMsgBox${this.instanceName}`).addEventListener("mouseout", () => {
+                        this._hover = false
+                    });
+                    document.getElementById(`abcAvatarMsgContainerTimer${this.instanceName}`).style.visibility = 'visible';
+                    document.getElementById(`abcAvatarMsgContainerTimer${this.instanceName}`).style.width = "0%";
+                    this.delayMax = this.delayMs;
+                    this.delayCur = 0;
+                    this.progressBar();
+                }
+            }
+
+            //Advance the countdown timer (progressBar)
+            progressBar() {
+                if (this.delayCur > this.delayMax) {
+                    //Counter complete, i.e. progressBar now at 100%
+                    this.vanishMsg();
+                } else {
+                    //Counter not yet complete
+                    setTimeout(() => {
+                        if (!this._hover) {
+                            this.delayCur += this.tick;
+                        }
+                        if (document.getElementById(`abcAvatarMsgContainerTimer${this.instanceName}`)) { //In case the msg has been closed
+                            document.getElementById(`abcAvatarMsgContainerTimer${this.instanceName}`).style.width = this.delayCur / this.delayMax * 100 + "%";
+                            this.progressBar();
+                        }
+                    }, this.tick);
+                }
+            }
+
+            //Remove the top message, then display the next message in the queue
+            removeTopMsg() {
+                document.getElementById(`abcAvatarMsgBox${this.instanceName}`).remove();
+                if (this.queue.length == 2) {
+                    document.getElementById(`abcAvatarMsgStack2${this.instanceName}`).remove();
+                }
+                if (this.queue.length == 1) {
+                    document.getElementById(`abcAvatarMsgStack${this.instanceName}`).remove();
+                }
+                this.displayNextMsg();
+            }
+
+            //Remove the current message. If there's nothing in the queue, then hide the Avatar; otherwise display the next message
+            vanishMsg() {
+                if (this.queue.length > 0) {
+                    //more messages in the queue
+                    this.removeTopMsg();
+                } else {
+                    //last message in the queue
+                    this._avatarVisible = false;
+                    //Wait for the animation to complete, then destroy the DOM instance of the class. (GC clears the rest)
+                    setTimeout(() => {
+                        if (document.getElementById(`abcAvatar${this.instanceName}`)) { //In case both the timer runs out *and* the close button are triggered in the same cycle
+                            document.getElementById(`abcAvatar${this.instanceName}`).remove();
+                            document.getElementById(`abcToast${this.instanceName}`).remove();
+                        }
+                    }, 100);
+                }
+            }
+        } //abcAvatar
+    </script>
+
+</head>
+
+<body>
+    <script>
+        let AnimationLibrary = new abcAnimationLibrary();
+        let Avatar = new abcAvatar('Avatar', "wingsuit", AnimationLibrary);
+        dummyCounter = 0;
+    </script>
+    <input type="button" value="Appear" is="appearButton" onclick="dummyCounter++;
+        Avatar.msg(document.getElementById('inMsg').value,document.getElementById('inTitle').value + dummyCounter, 000, 'OK')">
+    <input type="button" value="Vanish" onclick="Avatar.vanishMsg()">
+    <input type="text" id="inTitle" placeholder="title" value="Title">
+    <input type="text" id="inMsg" placeholder="message" value="Hi, I'm your message.">
+    <div id="sampleRed" style="background-color: #f00; border: 2px solid #0f0; width: 200px; height: 200px; top: 600px; left: 300px; position: absolute">
+        <div id="sampleYellow" style="background-color: #ff0; border: 2px solid rgb(123, 0, 255); width: 100px; height: 100px; top: 50px; left: 300px; position: relative;"></div>
+    </div>
+</body>
+
+</html>
