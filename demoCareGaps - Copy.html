@@ -203,8 +203,6 @@
             crQueries: {
                 // openGapList: "Parameters?gap-status=open-gap&_sort=-_lastUpdated",
                 openGapList: "Measure/$care-gaps?periodStart=2020-01-01&periodEnd=2020-12-31&status=open-gap&status=closed-gap&subject=Patient/end-to-end-EXM130&measureId=ColorectalCancerScreeningsFHIR",
-                labResults: "DocumentReference/181",    //Mock GET. This is really a base64 encoding of stringified JSON or the mock MeasureReport to be posted
-                measureReportPOST: "Measure/measure-EXM130-7.3.000/$submit-data",   //Take the mock data from labResults and POST it
             }
         };
         dataParams.baseURL = dataParams.servers[3].server;
@@ -288,29 +286,13 @@
                     `5. The provider's Smile FHIR server sees that the screening test has been completed, and automatically closes the Care Gap.`,
                     `6. The provider's office schedules a follow-up visit with patient <b>${dataParams.curCareGap.ptName}</b>.`,
                     `<br><br>`,
-                    `<input type="button" class="button" value="${dataParams.curCareGap.ptName}: return to provider for follow-up visit" onclick="spbNext()">`,
+                    `<input type="button" class="button" value="${dataParams.curCareGap.ptName} returns to provider for follow-up visit" onclick="spbNext()">`,
                 ]
                 addHTMLel(`cgrLabTestDetailsTxt${dataParams.reveal}`, ((dataParams.reveal < txt.length - 1) ? "text-focus-in" : ""), document.getElementById("cgrLabTestDetails"));
                 document.getElementById(`cgrLabTestDetailsTxt${dataParams.reveal}`).innerHTML = `${txt[dataParams.reveal]}<br><br>`;
-                if (dataParams.reveal == 3) {
-                    //Retrieve the lab results
-                    Logger.addTextLog("For this demo we will retrieve mock lab results for a colonoscopy:<br>&lt;FHIR server&gt;/<span class='emphasize'>DocumentReference</span>", "", false);
-                    APICall(dataParams.crQueries["labResults"], function (ret) {
-                        dataParams.rpt = JSON.parse( JSON.parse(atob(ret.content[0].attachment.data))); //OMG, did this ever f* me up. I had to parse this twice.
-                    });
-                };
-                if (dataParams.reveal == 5) {
-                    //Close the Care Gap. POST MeasureReport
-                    Logger.addTextLog("The Smile FHIR server detects the colonoscopy and submits a Measure Report, which will close the Care Gap:<br>&lt;FHIR server&gt;/<span class='emphasize'>Measure/.../$submit-data</span>", "", false);
-                    APICall(dataParams.crQueries["measureReportPOST"], function (ret) {
-                        console.log(ret)
-                    }, "POST", dataParams.rpt, { "Content-Type": "application/json" });
-
-
-                };
                 dataParams.reveal++;
                 if (dataParams.reveal < txt.length) { labReqRevealText() }
-            }, 200);
+            }, 2000);
         }
 
         //Stepped Progress Bar onChange
@@ -344,7 +326,7 @@
                     document.getElementById("cgrCareGap2").innerHTML = dataParams.curCareGap.careGapName;
                     document.getElementById("lrLabReqList").innerHTML = s;
                     break;
-                case 5: //Activities that happend outside of this demo: Patient gets lab tests performed
+                case 5: //
                     dataParams.orderedLabs = "";
                     for (var i = 0; i < dataParams.screeningTests.length; i++) {
                         if (dataParams.screeningTests[i].selected == true) dataParams.orderedLabs += (dataParams.orderedLabs.length > 0 ? ", " : "") + dataParams.screeningTests[i].name;
@@ -356,10 +338,6 @@
                     document.getElementById("cgrLabTestDetails").innerHTML = "";
                     labReqRevealText();
                     break;
-                case 6: //
-                    Logger.addTextLog("EMR: Doctor-Patient Follow-up Encounter", "heading2", false);
-
-                    break;
                 default:
                     break;
             }
@@ -369,7 +347,7 @@
         /*************** Remote Server Operations (previously AJAX) ***************/
         //async/await fetch (i.e. Promise AJAX). apiPath = everything after the domain (e.g. Patient/123). callbackfn e.g.: function(data){console.log(data)}
         //   verb is optional, default = GET. body is optional. headersObj is optional, e.g. {"Content-Type": "text/plain",}. optionsObj is optional, e.g. {mode: "cors",}
-        async function APICall(apiPath, callbackFn, verb, bodyJSON, headersObj, optionsObj) {
+        async function APICall(apiPath, callbackFn, verb, body, headersObj, optionsObj) {
             try {
                 if (!verb) verb = "GET";
                 if (!optionsObj) optionsObj = {};
@@ -381,20 +359,11 @@
                 if (dataParams.baseCredentials != "Og==") { fetchHeaders.append("Authorization", `Basic ${dataParams.baseCredentials}`) }   //"Og==" is base64 encoding of anonymous credentials
                 //options
                 optionsObj.method = verb;
-
-                if (bodyJSON) optionsObj.body = JSON.stringify(bodyJSON);
-                // optionsObj.mode = "same-origin";
-                optionsObj.headers = fetchHeaders;
+                if (body) optionsObj.body = JSON.stringify(body);
+                optionsObj.mode = "same-origin";
                 //fetch
-                let logID = Logger.addAPILog(api, verb, bodyJSON, headersObj, optionsObj);    //Log the API call
-
-                // console.log("verb, api >", verb, api);
-                // console.log("headersObj >", headersObj);
-                // console.log("optionsObj >", optionsObj);
-                // console.log("body.JSON >", bodyJSON);
-                // console.log("body.Stringified >", optionsObj.body);
-
-                const source = await fetch(api, optionsObj);
+                let logID = Logger.addAPILog(api, verb, body, headersObj, optionsObj);    //Log the API call
+                const source = await fetch(api, { optionsObj, headers: fetchHeaders });
                 const result = await source.json();
                 if (callbackFn !== undefined) callbackFn(result);
                 Logger.addAPIReturn(logID, result, source); //Log the API returned value
@@ -470,11 +439,6 @@
             return mo;
         }
 
-        //Window resize actions
-        winResizeEvent = () => {
-            document.getElementById("abcLogger").style.height = window.innerHeight + "px";
-        }
-
         //Page loaded functions
         window.addEventListener('load', function () {
             Logger = new abcLogger();
@@ -498,14 +462,8 @@
                     $('.fa-chevron-right').toggleClass('hide');
                 });
             });
-            winResizeEvent();
 
             dqmPtList_render();
-        });
-
-
-        window.addEventListener('resize', function () {
-            winResizeEvent();
         })
 
     </script>
@@ -706,40 +664,9 @@
                         <div id="cgrLabTestDetails"></div>
                     </section>
 
-                    <section id="spbSection6" class="spbSection6" style="display:none; text-align: center;">
-
-                        <img src="assets/img/ehr-ghost.png" style="width: 100%; max-width: 2000px; filter: blur(2px) contrast(75%) brightness(120%);">
-                        <div style="border: 3px solid #000; background-color: #ffffffe0; width: 60%; height: 400px; position: relative; top: -450px; margin-left: 20%;">
-                            <div style="width: 100%; text-align: center; background-color: #6D6E71; font: 900 18px; color: #fff;">Care Gap Report</div><br>
-                            <div>Select an open Care Gap below to initiate closing it.<br><br></div>
-                            <table style="width: 90%; padding: 2px 10px; margin: 0px 5%;">
-                                <tr>
-                                    <td colspan="2" style="background-color: #2C3E50; color: #fff; font-weight: 900;"><span id="cgrPtName"></span></td>
-                                </tr>
-                                <tr>
-                                    <td colspan="2" style="background-color: #8ac; color: #fff;">Open Care Gaps</td>
-                                </tr>
-                                <tr>
-                                    <td style="background-color: #79CEF2;">Care Gap</td>
-                                    <td style="background-color: #79CEF2;">Days Open</td>
-                                </tr>
-                                <tr class="cgrRow" onclick="spbNext()">
-                                    <td><span id="cgrCareGap"></span></td>
-                                    <td><span id="cgrDaysOpen"></span></td>
-                                </tr>
-                                <tr>
-                                    <td colspan="2">&nbsp;</td>
-                                </tr>
-                                <tr>
-                                    <td colspan="2" style="background-color: #8ac; border-top: 1px solid #2c3e50; color: #fff;">Recently Closed Care Gaps (last 90 days)</td>
-                                </tr>
-                                <tr>
-                                    <td style="background-color: #79CEF2;">Care Gap</td>
-                                    <td style="background-color: #79CEF2;">Closed days</td>
-                                </tr>
-                            </table>
-                        </div>
-
+                    <section id="spbSection6" class="spbSection6" style="display:none;">
+                        <p>Subsequent (follow-up) Encounter</p>
+                        <i>Click the reset demo button again to restart this demo</i>
                     </section>
                 </div>
                 <!-- END: Stepped Progress Bar -->
