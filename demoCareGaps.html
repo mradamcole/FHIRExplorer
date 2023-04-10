@@ -220,7 +220,7 @@
         var dqmPtListData = []; //Global variable for data to be added to the dqmPtList grid
 
         //Retrieve the open Care Gaps from the server, and extract (via FHIRPath or JSONPath) the appropriate data elements
-        openCareGaps = (populateNextAppointment) => {
+        openCareGaps = (tabulatorGrid, populateNextAppointment) => {
             dqmPtListData = [];
             APICall(dataParams.crQueries["openGapList"], function (ret) {
                 JSONPath.JSONPath({ //Composition: extract all compositions by finding resourceType=Composition, and traversing 1 level up to get the full object
@@ -232,7 +232,8 @@
                         const detectedIssueID = JSONPath.JSONPath({ path: '$..section..entry..reference', json: data })[0].replace(/DetectedIssue\//, "");
                         const measureReportID = JSONPath.JSONPath({ path: '$..section..focus..reference', json: data })[0].replace(/MeasureReport\//, "");
                         const ptObj = JSONPath.JSONPath({ json: ret, path: `$..*[?(@property==="id" && @.match(/${ptID}/))]^` })[0];
-                        const ptName = JSONPath.JSONPath({ path: "$..name..family", json: ptObj })[0] + ", " + JSONPath.JSONPath({ path: "$..name..family^..given", json: ptObj }).join(' ');
+                        const ptName = JSONPath.JSONPath({ path: "$..name..family^..given", json: ptObj })[0] + " " + JSONPath.JSONPath({ path: "$..name..family", json: ptObj })[0];
+                        const ptNameLF = JSONPath.JSONPath({ path: "$..name..family", json: ptObj })[0] + ", " + JSONPath.JSONPath({ path: "$..name..family^..given", json: ptObj }).join(' ');
                         const detectedIssueObj = JSONPath.JSONPath({ json: ret, path: `$..*[?(@property==="id" && @.match(/${detectedIssueID}/))]^` })[0];
                         const careGapStatusValue = JSONPath.JSONPath({ json: detectedIssueObj, path: '$..modifierExtension..valueCodeableConcept..coding..display' })[0];
                         const measureReportObj = JSONPath.JSONPath({ json: ret, path: `$..*[?(@property==="id" && @.match(/${measureReportID}/))]^` })[0];
@@ -246,6 +247,7 @@
                             "detectedIssueID": detectedIssueID,
                             "measureReportID": measureReportID,
                             "ptName": ptName,
+                            "ptNameLF": ptNameLF,
                             "careGapName": careGapName,
                             "careGapStatusValue": careGapStatusValue,
                             "measureReportDate": measureReportDate,
@@ -257,22 +259,28 @@
                 });
                 //After adding rows to the grid, update the Next Appointment column (via a separate API call)
                 if (populateNextAppointment) {
-                    Logger.addTextLog("For each Care Gap, get the patient's next encounter:<br>&lt;FHIR server&gt;/<span class='emphasize'>Encounter</span>", "", false);
-                    dqmPtList.addData(dqmPtListData).then(function () {
+                    Logger.addTextLog("For each open Care Gap, get the patient's next encounter:<br>&lt;FHIR server&gt;/<span class='emphasize'>Encounter</span>", "", false);
+                    tabulatorGrid.addData(dqmPtListData).then(function () {
                         //TODO: fix the filter on "&subject=Patient/123"
                         //TODO: the date will not be "lastUpdated", I'm not sure right now which field it should be
                         for (var i = 0; i < dqmPtListData.length; i++) {
                             const diID = dqmPtListData[i].detectedIssueID;
-                            APICall("Encounter?status=planned", function (ret) { //Encounter?status=planned&subject=Patient/123
-                                let nextEncDate = new Date(JSONPath.JSONPath({ json: ret, path: "$..lastUpdated" }).sort()[0]);
-                                nextEncDate = nextEncDate.getFullYear() + "-" + monthExpand(nextEncDate.getMonth(), 3) + "-" + nextEncDate.getDate();
-                                dqmPtList.updateData([{ "detectedIssueID": diID, nextAppointment: nextEncDate }]);
-                            });
+                            if (dqmPtListData[i].careGapStatusValue == "Open Gap") {
+                                APICall("Encounter?status=planned", function (ret) { //Encounter?status=planned&subject=Patient/123
+                                    let nextEncDate = new Date(JSONPath.JSONPath({ json: ret, path: "$..lastUpdated" }).sort()[0]);
+                                    nextEncDate = nextEncDate.getFullYear() + "-" + monthExpand(nextEncDate.getMonth(), 3) + "-" + nextEncDate.getDate();
+                                    tabulatorGrid.updateData([{ "detectedIssueID": diID, nextAppointment: nextEncDate }]);
+                                });
+                            } else {
+                                let nextEncDate = `<img src="assets/img/ok.png" height=24 style="vertical-align: middle;"> Gap Closed`;
+                                // let nextEncDate = "<b>hi</b> there";
+                                tabulatorGrid.updateData([{ "detectedIssueID": diID, nextAppointment: nextEncDate }]);
+                            }
                         }
-                        dqmPtList.setSort([{ column: "measureReportAging", dir: "desc" }]);
+                        tabulatorGrid.setSort([{ column: "measureReportAging", dir: "desc" }]);
                     });
                 } else {
-                    // dqmPtList.addData(dqmPtListData);
+                    // tabulatorGrid.addData(dqmPtListData);
                 }
             });
         }
@@ -281,12 +289,12 @@
         labReqRevealText = () => {
             setTimeout(() => {
                 const txt = [
-                    `<br><br>1. Some time later today or in the next few days patient <b>${dataParams.curCareGap.ptName}</b> visits the lab.`,
-                    `2. The lab performs the screening test(s) <b>${dataParams.orderedLabs}</b>.`,
-                    `3. The results of the screening test is sent back to the provider.`,
-                    `4. The providers EMR ingests the lab results.`,
-                    `5. The provider's Smile FHIR server sees that the screening test has been completed, and automatically closes the Care Gap.`,
-                    `6. The provider's office schedules a follow-up visit with patient <b>${dataParams.curCareGap.ptName}</b>.`,
+                    `<br><br>1. Some time over the next few days the patient <b>${dataParams.curCareGap.ptName}</b> <i>visits</i> the clinic where a GI specialist will perform the colonoscopy screening test.`,
+                    `2. The specialist <i>performs</i> the screening test(s) <b>${dataParams.orderedLabs}</b>.`,
+                    `3. The results of the screening test(s) are <i>sent</i> back to the provider.`,
+                    `4. The provider's EMR <i>ingests</i> the results.`,
+                    `5. The provider's Smile FHIR server sees that a screening test has been completed, and if applicable, <b>automatically <i>closes</i> the Care Gap</b>.`,
+                    `6. The provider's office <i>schedules</i> a follow-up visit with patient <b>${dataParams.curCareGap.ptName}</b>.`,
                     `<br><br>`,
                     `<input type="button" class="button" value="${dataParams.curCareGap.ptName}: return to provider for follow-up visit" onclick="spbNext()">`,
                 ]
@@ -294,23 +302,21 @@
                 document.getElementById(`cgrLabTestDetailsTxt${dataParams.reveal}`).innerHTML = `${txt[dataParams.reveal]}<br><br>`;
                 if (dataParams.reveal == 3) {
                     //Retrieve the lab results
-                    Logger.addTextLog("For this demo we will retrieve mock lab results for a colonoscopy:<br>&lt;FHIR server&gt;/<span class='emphasize'>DocumentReference</span>", "", false);
+                    Logger.addTextLog("For this demo we will retrieve mock procedure results for a colonoscopy:<br>&lt;FHIR server&gt;/<span class='emphasize'>DocumentReference</span>", "", false);
                     APICall(dataParams.crQueries["labResults"], function (ret) {
-                        dataParams.rpt = JSON.parse( JSON.parse(atob(ret.content[0].attachment.data))); //OMG, did this ever f* me up. I had to parse this twice.
+                        dataParams.rpt = JSON.parse(JSON.parse(atob(ret.content[0].attachment.data))); //OMG, did this ever f* me up. I had to parse this twice.
                     });
                 };
                 if (dataParams.reveal == 5) {
                     //Close the Care Gap. POST MeasureReport
                     Logger.addTextLog("The Smile FHIR server detects the colonoscopy and submits a Measure Report, which will close the Care Gap:<br>&lt;FHIR server&gt;/<span class='emphasize'>Measure/.../$submit-data</span>", "", false);
                     APICall(dataParams.crQueries["measureReportPOST"], function (ret) {
-                        console.log(ret)
+                        // console.log(ret)
                     }, "POST", dataParams.rpt, { "Content-Type": "application/json" });
-
-
                 };
                 dataParams.reveal++;
                 if (dataParams.reveal < txt.length) { labReqRevealText() }
-            }, 200);
+            }, 800);
         }
 
         //Stepped Progress Bar onChange
@@ -320,26 +326,27 @@
                 case 2: //Populate the Care Gaps grid
                     Logger.addTextLog("Retrieve open Care Gaps", "heading2", false);
                     Logger.addTextLog("Execute the $care-gap operation:<br>&lt;FHIR server&gt;/<span class='emphasize'>Measure/$care-gaps</span>", "", false);
-                    openCareGaps(true);
+                    openCareGaps(dqmPtList, true);
                     break;
                 case 3: //Populate the Care Gaps Report table
                     setTimeout(() => {  //Need to give the Logger a chance to write the message from the Tabulator.click event before the Logger writes the following events.
                         Logger.addTextLog("EMR: Doctor-Patient Encounter: Care-Gap Report", "heading2", false);
-                        Logger.addTextLog("The Care Gap has been copied from previous screen. In a real world scenario the EMR would call the FHIR server and request either the specific Care Gap or all open Care Gaps for the given patient.", "", false);
+                        Logger.addTextLog("The Care Gap has been copied from the previous screen. In a real world scenario the EMR would call the FHIR server and request either the specific Care Gap or all open Care Gaps for the given patient.", "", false);
                         document.getElementById("cgrPtName").innerHTML = dataParams.curCareGap.ptName;
                         document.getElementById("cgrCareGap").innerHTML = dataParams.curCareGap.careGapName;
                         document.getElementById("cgrDaysOpen").innerHTML = dataParams.curCareGap.measureReportAging;
                     }, 500);
                     break;
                 case 4: //Populate the Screening Tests
-                    Logger.addTextLog("EMR: Doctor-Patient Encounter: Lab Requisition", "heading2", false);
+                    Logger.addTextLog("EMR: Doctor-Patient Encounter: Screening test ordered", "heading2", false);
                     Logger.addTextLog(`Care Gap: "${dataParams.curCareGap.careGapName}" selected`, "", false);
                     Logger.addTextLog(`[[ GET screening tests ]]`, "", false);
                     //screeningTest are currently hard coded. TODO: retrieve the lab tests from the server -- work with Rob on the server side.
-                    dataParams.screeningTests = [{ name: "Colonoscopy", selected: false }, { name: "Fecal Occult Blood Test", selected: false }, { name: "Flexible Sigmoidoscopy", selected: false }, { name: "Fecal Immunochemical Test DNA", selected: false }, { name: "CT Colonography", selected: false }];
+                    dataParams.screeningTests = [{ name: "Colonoscopy", selected: true }, { name: "Fecal Occult Blood Test", selected: false }, { name: "Flexible Sigmoidoscopy", selected: false }, { name: "Fecal Immunochemical Test DNA", selected: false }, { name: "CT Colonography", selected: false }];
                     let s = "";
                     for (var i = 0; i < dataParams.screeningTests.length; i++) {
-                        s += `<li><label><input name="radio-buttons" value="${dataParams.screeningTests[i].name}" type="checkbox" class="lrOption" onclick="dataParams.screeningTests[${i}].selected = this.checked"> ${dataParams.screeningTests[i].name}</label></li>`;
+                        s += `<li><label><input name="radio-buttons" value="${dataParams.screeningTests[i].name}" type="checkbox" class="lrOption" ${(dataParams.screeningTests[i].selected) ? "checked" : ""}
+                            ${(dataParams.screeningTests[i].name == "Colonoscopy") ? "disabled" : ""} onclick="dataParams.screeningTests[${i}].selected = this.checked"> ${dataParams.screeningTests[i].name}</label></li>`;
                     }
                     document.getElementById("cgrCareGap2").innerHTML = dataParams.curCareGap.careGapName;
                     document.getElementById("lrLabReqList").innerHTML = s;
@@ -349,16 +356,16 @@
                     for (var i = 0; i < dataParams.screeningTests.length; i++) {
                         if (dataParams.screeningTests[i].selected == true) dataParams.orderedLabs += (dataParams.orderedLabs.length > 0 ? ", " : "") + dataParams.screeningTests[i].name;
                     }
-                    Logger.addTextLog(`Lab tests requisitioned <b>${dataParams.orderedLabs}</b>`, "", false);
-                    Logger.addTextLog("Patient has screening tests performed", "heading4", false);
-                    Logger.addTextLog(`This portion of the workflow is external to this demo.`, "", false);
+                    Logger.addTextLog(`Screening test(s) ordered <b>${dataParams.orderedLabs}</b>`, "", false);
+                    Logger.addTextLog("Patient has screening test(s) performed", "heading4", false);
+                    // Logger.addTextLog(`This portion of the workflow is external to this demo.`, "", false);
                     dataParams.reveal = 0;
                     document.getElementById("cgrLabTestDetails").innerHTML = "";
                     labReqRevealText();
                     break;
                 case 6: //
                     Logger.addTextLog("EMR: Doctor-Patient Follow-up Encounter", "heading2", false);
-
+                    openCareGaps(dqmPtList2, true);
                     break;
                 default:
                     break;
@@ -368,7 +375,7 @@
 
         /*************** Remote Server Operations (previously AJAX) ***************/
         //async/await fetch (i.e. Promise AJAX). apiPath = everything after the domain (e.g. Patient/123). callbackfn e.g.: function(data){console.log(data)}
-        //   verb is optional, default = GET. body is optional. headersObj is optional, e.g. {"Content-Type": "text/plain",}. optionsObj is optional, e.g. {mode: "cors",}
+        //   verb is optional, default = GET. bodyJSON is optional (JSON formatted). headersObj is optional, e.g. {"Content-Type": "text/plain",}. optionsObj is optional, e.g. {mode: "cors",}
         async function APICall(apiPath, callbackFn, verb, bodyJSON, headersObj, optionsObj) {
             try {
                 if (!verb) verb = "GET";
@@ -381,19 +388,10 @@
                 if (dataParams.baseCredentials != "Og==") { fetchHeaders.append("Authorization", `Basic ${dataParams.baseCredentials}`) }   //"Og==" is base64 encoding of anonymous credentials
                 //options
                 optionsObj.method = verb;
-
                 if (bodyJSON) optionsObj.body = JSON.stringify(bodyJSON);
-                // optionsObj.mode = "same-origin";
                 optionsObj.headers = fetchHeaders;
                 //fetch
                 let logID = Logger.addAPILog(api, verb, bodyJSON, headersObj, optionsObj);    //Log the API call
-
-                // console.log("verb, api >", verb, api);
-                // console.log("headersObj >", headersObj);
-                // console.log("optionsObj >", optionsObj);
-                // console.log("body.JSON >", bodyJSON);
-                // console.log("body.Stringified >", optionsObj.body);
-
                 const source = await fetch(api, optionsObj);
                 const result = await source.json();
                 if (callbackFn !== undefined) callbackFn(result);
@@ -500,7 +498,8 @@
             });
             winResizeEvent();
 
-            dqmPtList_render();
+            dqmPtList_render();     //Initial patient encounter
+            dqmPtList2_render();    //Follow-up visit
         });
 
 
@@ -562,7 +561,7 @@
                         <div class="step step-4"><span> 4</span>
                             <div class="fa fa-check opaque"></div>
                             <div class="step-label">
-                                Lab Requisition<br>
+                                Screening Test Ordered<br>
                                 <p class="spbSubHeading">
                                     <i class="fa fa-user" style="width: 12px;"></i> Doctor<br>
                                     <i class="fa fa-calendar" style="width: 12px;"></i> Today
@@ -572,7 +571,7 @@
                         <div class="step step-5"><span> 5</span>
                             <div class="fa fa-check opaque"></div>
                             <div class="step-label">
-                                Lab Test Performed<br>
+                                Test Performed<br>
                                 <p class="spbSubHeading">
                                     <i class="fa fa-user" style="width: 12px;"></i> Patient<br>
                                     <i class="fa fa-calendar" style="width: 12px;"></i> This week
@@ -594,9 +593,10 @@
                 </div>
 
                 <div id="spbContentContainer" style="position: relative; top: 100px;">
+
                     <section id="spbSection1" class="spbSection1" style="display:block;">
                         <div style="font-size: 18px; margin: 5px 20px 10px 20px;">
-                            <p>The Gaps in Care report is a powerful tool that can result in better care outcomes, benefiting the payer (time savings), the provider (cost savings), and the patient
+                            <p>The Gaps in Care report is a powerful tool that can result in better care outcomes, benefiting the payer (cost savings), the provider (time savings), and the patient
                                 (better health outcomes).</p>
                             <p>This scenario starts with a Population Health Manager employing the Care Gap Work List to monitor a patient population for gaps in care. They will identify patients
                                 with gaps related to the Colorectal Cancer Screening Quality Measure. Then they can easily manage these patients through the recommended CPG to gap closure.</p>
@@ -622,11 +622,11 @@
                                     columns: [ //Define Table Columns
                                         { title: "detectedIssueID", field: "detectedIssueID", hozAlign: "left", visible: false },
                                         { title: "ptID", field: "ptID", hozAlign: "left", visible: false },
-                                        { title: "Patient", field: "ptName", hozAlign: "left", minWidth: 300, headerSort: false },
+                                        { title: "Patient", field: "ptNameLF", hozAlign: "left", minWidth: 300, headerSort: false },
                                         { title: "Care Gap", field: "careGapName", hozAlign: "left", minWidth: 300, headerSort: false },
                                         { title: "Status", field: "careGapStatusValue", hozAlign: "left", minWidth: 80, headerSort: false },
                                         { title: "Days open", field: "measureReportAging", hozAlign: "left", minWidth: 80, headerSort: false },
-                                        { title: "Next Appointment", field: "nextAppointment", sorter: "date", hozAlign: "left", minWidth: 200, headerSort: false },
+                                        { title: "Next Appointment", field: "nextAppointment", sorter: "date", hozAlign: "left", minWidth: 200, headerSort: false, formatter: "html" },
                                     ],
                                 });
 
@@ -638,20 +638,6 @@
                                 });
                             }
                         </script>
-
-
-                        <!-- <br><br><br><br><br>
-                        Simple GET API: <input id="emrSimpleGET" type="text" value="Parameters">
-                        <input type="button" value="GET" onclick="APICall(getElementById('emrSimpleGET').value, function (ret) {
-                                console.log(ret);
-                            })">
-                        <br><br>
-                        <input type="button" value="Toggle compression" onclick='updateStyleRule(".abcAPIContainer li.jsonValAr, .abcAPIContainer li.jsonValObj", "white-space", "pre", "normal")'>
-                        <br><br>
-                        Log Text: <input id="logText" type="text" value="" placeholder="type some stuff here">
-                        &nbsp;&nbsp;Class: <input id="logClass" type="text" value="" placeholder="text, heading1">
-                        <input type="button" value="Add me to the log" onclick="Logger.addTextLog(getElementById('logText').value, getElementById('logClass').value)">
-                        <br><br> -->
                     </section>
 
                     <section id="spbSection3" class="spbSection3" style="display:none; text-align: center;">
@@ -692,12 +678,14 @@
                         <img src="assets/img/ehr-ghost.png" style="width: 100%; max-width: 2000px; filter: blur(2px) contrast(75%) brightness(120%);">
                         <div style="border: 3px solid #000; background-color: #ffffffe0; width: 60%; height: 400px; position: relative; top: -450px; margin-left: 20%;">
                             <div style="width: 100%; text-align: center; background-color: #6D6E71; font: 900 18px; color: #fff;">Care Gap Report</div><br>
-                            <div style="text-align: center;">Order any of the screening tests below to close the <span id="cgrCareGap2" style="font-weight: bold;"></span> Care Gap.<br><br></div>
+                            <div style="text-align: center;">Order any of the screening tests below to close the <span id="cgrCareGap2" style="font-weight: bold;"></span> Care Gap.<br>
+                                <span style="font-size: smaller; font-style: italic;">(For this demo we'll perform a colonoscopy.)</span><br><br>
+                            </div>
                             <div style="width: fit-content; margin-left: auto; margin-right: auto;">
                                 <ul id="lrLabReqList" style="list-style: none; padding-left: 0px;"></ul>
                             </div><br>
                             <div style="width: fit-content; margin-left: auto; margin-right: auto;">
-                                <input type="button" class="button" value="Order Lab Test(s)" onclick="spbNext()">
+                                <input type="button" class="button" value="Order Screening Test(s)" onclick="spbNext()">
                             </div>
                         </div>
                     </section>
@@ -708,37 +696,33 @@
 
                     <section id="spbSection6" class="spbSection6" style="display:none; text-align: center;">
 
-                        <img src="assets/img/ehr-ghost.png" style="width: 100%; max-width: 2000px; filter: blur(2px) contrast(75%) brightness(120%);">
-                        <div style="border: 3px solid #000; background-color: #ffffffe0; width: 60%; height: 400px; position: relative; top: -450px; margin-left: 20%;">
-                            <div style="width: 100%; text-align: center; background-color: #6D6E71; font: 900 18px; color: #fff;">Care Gap Report</div><br>
-                            <div>Select an open Care Gap below to initiate closing it.<br><br></div>
-                            <table style="width: 90%; padding: 2px 10px; margin: 0px 5%;">
-                                <tr>
-                                    <td colspan="2" style="background-color: #2C3E50; color: #fff; font-weight: 900;"><span id="cgrPtName"></span></td>
-                                </tr>
-                                <tr>
-                                    <td colspan="2" style="background-color: #8ac; color: #fff;">Open Care Gaps</td>
-                                </tr>
-                                <tr>
-                                    <td style="background-color: #79CEF2;">Care Gap</td>
-                                    <td style="background-color: #79CEF2;">Days Open</td>
-                                </tr>
-                                <tr class="cgrRow" onclick="spbNext()">
-                                    <td><span id="cgrCareGap"></span></td>
-                                    <td><span id="cgrDaysOpen"></span></td>
-                                </tr>
-                                <tr>
-                                    <td colspan="2">&nbsp;</td>
-                                </tr>
-                                <tr>
-                                    <td colspan="2" style="background-color: #8ac; border-top: 1px solid #2c3e50; color: #fff;">Recently Closed Care Gaps (last 90 days)</td>
-                                </tr>
-                                <tr>
-                                    <td style="background-color: #79CEF2;">Care Gap</td>
-                                    <td style="background-color: #79CEF2;">Closed days</td>
-                                </tr>
-                            </table>
-                        </div>
+                        <div id="dqmPtList2" style="margin: 20px; text-align: center; font-size: 18px; color: #d0d0d0; font-weight:bold;">Retrieving Care Gaps...</div>
+                        <script>
+                            var dqmPtList2;
+                            dqmPtList2_render = () => {
+                                dqmPtList2 = new Tabulator("#dqmPtList2", {
+                                    data: dqmPtListData, //assign data to table
+                                    height: 305, // set height of table (in CSS or here), this enables the Virtual DOM and improves render speed dramatically (can be any valid css height value)
+                                    layout: "fitColumns", //fit columns to width of table (optional)
+                                    index: "detectedIssueID", //set the index field (~=PK) to what should be a guaranteed unique value
+                                    columns: [ //Define Table Columns
+                                        { title: "detectedIssueID", field: "detectedIssueID", hozAlign: "left", visible: false },
+                                        { title: "ptID", field: "ptID", hozAlign: "left", visible: false },
+                                        { title: "Patient", field: "ptNameLF", hozAlign: "left", minWidth: 300, headerSort: false },
+                                        { title: "Care Gap", field: "careGapName", hozAlign: "left", minWidth: 300, headerSort: false },
+                                        { title: "Status", field: "careGapStatusValue", hozAlign: "left", minWidth: 80, headerSort: false },
+                                        { title: "Days open", field: "measureReportAging", hozAlign: "left", minWidth: 80, headerSort: false },
+                                        { title: "Next Appointment", field: "nextAppointment", sorter: "date", hozAlign: "left", minWidth: 200, headerSort: false, formatter: "html" },
+                                    ],
+                                });
+
+                                //trigger an alert message when the row is clicked
+                                dqmPtList2.on("rowClick", function (e, row) {
+                                    dataParams.curCareGap = row.getData();
+                                    alert("Click the reset button (the recycling icon in the header bar) to restart this demo.")
+                                });
+                            }
+                        </script>
 
                     </section>
                 </div>
@@ -783,7 +767,7 @@
 <!-- Tabulator (fhirGrid) -->
 <script type="text/javascript" src="https://unpkg.com/tabulator-tables/dist/js/tabulator.min.js"></script>
 
-<!-- JSONPath, because it is 1Mx easier than FHIRPath -->
+<!-- JSONPath, because it is so much easier than FHIRPath -->
 <script type="text/javascript" src="assets/js/jsonpath-plus7.2.0.cjs"></script>
 
 <!-- FHIRPath (dependency of fhirGrid)-->
