@@ -19,6 +19,7 @@ spbNext = () => {
         currentStep.removeClass('active').addClass('valid');
         currentStep.find('.fa.fa-check').removeClass('opaque');
     }
+    spbChange();    //ABC: Calls an external function whenever the spb is changed
 }
 
 spbPrevious = () => {
@@ -35,4 +36,5 @@ spbPrevious = () => {
     prevStep.find('.fa.fa-check').addClass('opaque');
     prevStep.addClass('active').removeClass('valid');
     progressBar.removeAttr('class').addClass('step-' + prevStepNum).data('current-step', prevStepNum);
+    spbChange();    //ABC: Calls an external function whenever the spb is changed
 }
