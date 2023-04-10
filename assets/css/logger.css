@@ -19,6 +19,8 @@
     color: #fff;
     font-size: 13px;
     font-family: Menlo, Monaco, Consolas, "Courier New", monospace;
+    overflow-y: auto;
+    overflow-x: auto;
 }
 
 .abcAPIContainer li.jsonValAr,
@@ -98,7 +100,13 @@
 .abcAPIContainer .text {
     color: #eee;
     font: 14px Arial, Helvetica, sans-serif;
+    font-weight: 100;
     margin: 5px;
+}
+
+.abcAPIContainer .text .emphasize {
+    color: #90e0ff;
+    /* font-weight: 600; */
 }
 
 .abcAPIContainer .heading1 {
@@ -112,7 +120,29 @@
 .abcAPIContainer .heading2 {
     border: 1px solid #aaa;
     border-radius: 5px;
+    background: var(--backgroundDarkBlue);
+    padding: 2px 5px 2px 5px;
+    color: #fff;
+    font: bold 16px Arial, Helvetica, sans-serif;
+    width: calc(100% - 14px);
+    text-align: center;
+}
+
+.abcAPIContainer .heading3 {
+    border: 1px solid #aaa;
+    border-radius: 5px;
     background: var(--backgroundOrange);
+    padding: 2px 5px 2px 5px;
+    color: #222;
+    font: bold 16px Arial, Helvetica, sans-serif;
+    width: calc(100% - 14px);
+    text-align: center;
+}
+
+.abcAPIContainer .heading4 {
+    border: 1px solid #aaa;
+    border-radius: 5px;
+    background: var(--backgroundLime);
     padding: 2px 5px 2px 5px;
     color: #222;
     font: bold 16px Arial, Helvetica, sans-serif;
@@ -161,10 +191,12 @@
     left: -22px;
     z-index: 3;
     cursor: pointer;
+    opacity: 25%;
 }
 
 .sidepanelContainer .circle:hover {
     color: #af0;
+    opacity: 100%;
 }
 
 .sidepanelContainer .fa-chevron-left {
