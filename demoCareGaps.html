@@ -329,6 +329,7 @@
                 document.getElementById("cgrCareGap2").innerHTML = dataParams.curCareGap.careGapName;
                 document.getElementById("lrLabReqList").innerHTML = s;
                 document.getElementById("lrDSRecommendation").innerHTML = dsDesc;
+                document.getElementById("lrSubmitButton").style.visibility = "visible";                
             })
         };
 
@@ -361,7 +362,6 @@
                     APICall(dataParams.crQueries["measureReportPOST"], function (ret) {
                         // console.log(ret)
                     }, "POST", dataParams.rpt, { "Content-Type": "application/json" });
-                    console.log(JSON.stringify(dataParams.rpt))
                 };
                 dataParams.reveal++;
                 if (dataParams.reveal < txt.length) { labReqRevealText() }
@@ -726,7 +726,7 @@
                                 <ul id="lrLabReqList" style="list-style: none; padding-left: 0px;"><center><img src="assets/img/spinner3.gif" height="40"></center></ul>
                             </div>
                             <div style="margin-left: 100px; margin-right: 100px; font-size: smaller;" id="lrDSRecommendation"></div><br>
-                            <div style="width: fit-content; margin-left: auto; margin-right: auto;">
+                            <div style="width: fit-content; margin-left: auto; margin-right: auto; visibility: hidden;" id="lrSubmitButton">
                                 <input type="button" class="button" value="Order Screening Test(s)" onclick="spbNext()">
                             </div>
                         </div>
@@ -775,7 +775,7 @@
         </div>
 
         <!-- MockEMR Footer row -->
-        <div id="mockEMRFooter" class="rowFooter">&nbsp;Care Gaps Demo v1.0.3</div>
+        <div id="mockEMRFooter" class="rowFooter">&nbsp;Care Gaps Demo v1.0.5</div>
     </div>
 
     <!-- START: Sidepanel -->
