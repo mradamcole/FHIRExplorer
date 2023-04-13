@@ -274,28 +274,23 @@
                 //After adding rows to the grid, update the Next Appointment column (via a separate API call)
                 if (populateNextAppointment) {
                     Logger.addTextLog("For each open Care Gap, get the patient's next encounter:<br>&lt;FHIR server&gt;/<span class='emphasize'>Encounter</span>", "", false);
-                    tabulatorGrid.addData(dqmPtListData).then(function () {
-                        //TODO: fix the filter on "&subject=Patient/123"
-                        //TODO: the date will not be "lastUpdated", I'm not sure right now which field it should be
-                        for (var i = 0; i < dqmPtListData.length; i++) {
-                            const diID = dqmPtListData[i].detectedIssueID;
-                            if (dqmPtListData[i].careGapStatusValue == "Open Gap") {
-                                APICall("Encounter?status=planned", function (ret) { //Encounter?status=planned&subject=Patient/123
-                                    let nextEncDate = new Date(JSONPath.JSONPath({ json: ret, path: "$..lastUpdated" }).sort()[0]);
-                                    nextEncDate = nextEncDate.getFullYear() + "-" + monthExpand(nextEncDate.getMonth(), 3) + "-" + nextEncDate.getDate();
-                                    tabulatorGrid.updateData([{ "detectedIssueID": diID, nextAppointment: nextEncDate }]);
-                                });
-                            } else {
-                                let nextEncDate = `<img src="assets/img/ok.png" height=24 style="vertical-align: middle;"> Gap Closed`;
-                                // let nextEncDate = "<b>hi</b> there";
-                                tabulatorGrid.updateData([{ "detectedIssueID": diID, nextAppointment: nextEncDate }]);
-                            }
-                        }
-                        tabulatorGrid.setSort([{ column: "measureReportAging", dir: "desc" }]);
-                    });
-                } else {
-                    // tabulatorGrid.addData(dqmPtListData);
                 }
+                tabulatorGrid.addData(dqmPtListData).then(function () {
+                    for (var i = 0; i < dqmPtListData.length; i++) {
+                        const diID = dqmPtListData[i].detectedIssueID;
+                        if (dqmPtListData[i].careGapStatusValue == "Open Gap") {
+                            APICall("Encounter?status=planned", function (ret) { //Encounter?status=planned&subject=Patient/123
+                                let nextEncDate = new Date(JSONPath.JSONPath({ json: ret, path: "$..lastUpdated" }).sort()[0]);
+                                nextEncDate = nextEncDate.getFullYear() + "-" + monthExpand(nextEncDate.getMonth(), 3) + "-" + nextEncDate.getDate();
+                                tabulatorGrid.updateData([{ "detectedIssueID": diID, nextAppointment: nextEncDate }]);
+                            });
+                        } else {
+                            let nextEncDate = `<img src="assets/img/ok.png" height=24 style="vertical-align: middle;"> Gap Closed`;
+                            tabulatorGrid.updateData([{ "detectedIssueID": diID, nextAppointment: nextEncDate }]);
+                        }
+                    }
+                    tabulatorGrid.setSort([{ column: "measureReportAging", dir: "desc" }]);
+                });
             });
         }
 
@@ -317,7 +312,7 @@
                 dataParams.screeningTests = [
                     { name: "Colonoscopy", selected: (dsCode == "http://snomed.info/sct|73761001" ? true : false), value: "http://snomed.info/sct|73761001" }, //Georgie
                     { name: "Fecal Occult Blood Test", selected: (dsCode == "tbd" ? true : false), value: "tbd" },
-                    { name: "Flexible Sigmoidoscopy", selected:(dsCode == "http://snomed.info/sct|44441009" ? true : false), value: "http://snomed.info/sct|44441009" },  //Tanis
+                    { name: "Flexible Sigmoidoscopy", selected: (dsCode == "http://snomed.info/sct|44441009" ? true : false), value: "http://snomed.info/sct|44441009" },  //Tanis
                     { name: "Fecal Immunochemical Test DNA", selected: (dsCode == "http://snomed.info/sct|457591000124105" ? true : false), value: "http://snomed.info/sct|457591000124105" },    //Justin
                     { name: "CT Colonography", selected: (dsCode == "http://snomed.info/sct|418714002" ? true : false), value: "http://snomed.info/sct|418714002" },    //Agnes, Jerred
                 ];
@@ -329,7 +324,7 @@
                 document.getElementById("cgrCareGap2").innerHTML = dataParams.curCareGap.careGapName;
                 document.getElementById("lrLabReqList").innerHTML = s;
                 document.getElementById("lrDSRecommendation").innerHTML = dsDesc;
-                document.getElementById("lrSubmitButton").style.visibility = "visible";                
+                document.getElementById("lrSubmitButton").style.visibility = "visible";
             })
         };
 
@@ -353,7 +348,7 @@
                     Logger.addTextLog("For this demo we will retrieve mock procedure results for a colonoscopy:<br>&lt;FHIR server&gt;/<span class='emphasize'>DocumentReference</span>", "", false);
                     APICall(dataParams.crQueries["labResults"], function (ret) {
                         //The replaceAll is necessary as I saved the lab result for ptID "end-to-end-EXM130" as a DocumentReference resource, and it was hardcoded to this patient ID
-                        dataParams.rpt = JSON.parse(JSON.parse(atob(ret.content[0].attachment.data)).replaceAll("end-to-end-EXM130",dataParams.curCareGap.ptID) ); //OMG, did this ever f* me up. I had to parse this twice.
+                        dataParams.rpt = JSON.parse(JSON.parse(atob(ret.content[0].attachment.data)).replaceAll("end-to-end-EXM130", dataParams.curCareGap.ptID)); //OMG, did this ever f* me up. I had to parse this twice.
                     });
                 };
                 if (dataParams.reveal == 5) {
@@ -406,7 +401,7 @@
                     break;
                 case 6: //
                     Logger.addTextLog("EMR: Doctor-Patient Follow-up Encounter", "heading2", false);
-                    careGapsList(dqmPtList2, "closedGapList", true);
+                    careGapsList(dqmPtList2, "closedGapList", false);
                     break;
                 default:
                     break;
@@ -723,7 +718,9 @@
                             <div style="text-align: center;">Order any of the screening tests below to close the <span id="cgrCareGap2" style="font-weight: bold;"></span> Care Gap.<br>
                             </div>
                             <div style="width: fit-content; margin-left: auto; margin-right: auto;">
-                                <ul id="lrLabReqList" style="list-style: none; padding-left: 0px;"><center><img src="assets/img/spinner3.gif" height="40"></center></ul>
+                                <ul id="lrLabReqList" style="list-style: none; padding-left: 0px;">
+                                    <center><img src="assets/img/spinner3.gif" height="40"></center>
+                                </ul>
                             </div>
                             <div style="margin-left: 100px; margin-right: 100px; font-size: smaller;" id="lrDSRecommendation"></div><br>
                             <div style="width: fit-content; margin-left: auto; margin-right: auto; visibility: hidden;" id="lrSubmitButton">
@@ -775,7 +772,7 @@
         </div>
 
         <!-- MockEMR Footer row -->
-        <div id="mockEMRFooter" class="rowFooter">&nbsp;Care Gaps Demo v1.0.5</div>
+        <div id="mockEMRFooter" class="rowFooter">&nbsp;Care Gaps Demo v1.0.6</div>
     </div>
 
     <!-- START: Sidepanel -->
