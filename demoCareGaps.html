@@ -340,7 +340,7 @@
                     `2. The specialist <i>performs</i> the screening test(s) <b>${dataParams.orderedLabs}</b>.`,
                     `3. The results of the screening test(s) are <i>sent</i> back to the provider.`,
                     `4. The provider's EMR <i>ingests</i> the results.`,
-                    `5. The provider's Smile FHIR server sees that a screening test has been completed, and if applicable, <b>automatically <i>closes</i> the Care Gap</b>.`,
+                    `5. The provider's Smile FHIR server sees that the screening test has been completed, <b>automatically reruns</b> the care gap report, and the new care gap report shows that the care gap has been closed (as the required screening test has now been performed).`,
                     `6. The provider's office <i>schedules</i> a follow-up visit with patient <b>${dataParams.curCareGap.ptName}</b>.`,
                     `<br><br>`,
                     `<input type="button" class="button" value="${dataParams.curCareGap.ptName}: return to provider for follow-up visit" onclick="spbNext()">`,
@@ -351,7 +351,8 @@
                     //Retrieve the lab results
                     Logger.addTextLog("For this demo we will retrieve mock procedure results for a colonoscopy:<br>&lt;FHIR server&gt;/<span class='emphasize'>DocumentReference</span>", "", false);
                     APICall(dataParams.crQueries["labResults"], function (ret) {
-                        dataParams.rpt = JSON.parse(JSON.parse(atob(ret.content[0].attachment.data))); //OMG, did this ever f* me up. I had to parse this twice.
+                        //The replaceAll is necessary as I saved the lab result for ptID "end-to-end-EXM130" as a DocumentReference resource, and it was hardcoded to this patient ID
+                        dataParams.rpt = JSON.parse(JSON.parse(atob(ret.content[0].attachment.data)).replaceAll("end-to-end-EXM130",dataParams.curCareGap.ptID) ); //OMG, did this ever f* me up. I had to parse this twice.
                     });
                 };
                 if (dataParams.reveal == 5) {
@@ -360,6 +361,7 @@
                     APICall(dataParams.crQueries["measureReportPOST"], function (ret) {
                         // console.log(ret)
                     }, "POST", dataParams.rpt, { "Content-Type": "application/json" });
+                    console.log(JSON.stringify(dataParams.rpt))
                 };
                 dataParams.reveal++;
                 if (dataParams.reveal < txt.length) { labReqRevealText() }
