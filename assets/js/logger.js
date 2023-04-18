@@ -26,7 +26,9 @@ class abcLogger {
     //Create a new log
     newLog = (className) => {
         this._logID++;
-        return addHTMLel("loggerTitleRow" + this._logID, className, document.getElementById("abcLogger"));
+        const el = addHTMLel("loggerTitleRow" + this._logID, className, document.getElementById("abcLogger"));
+        el.classList.add(this._logID % 2 ? "evenRow" : "oddRow");
+        return el;
     }
 
     //Add a text (HTML) log. Optional: className
@@ -38,7 +40,8 @@ class abcLogger {
         }
         const el = this.newLog(className);
         el.innerHTML = text;
-        addHTMLel("", "apiSpacer", document.getElementById("abcLogger"), "div");
+        const tempEl = addHTMLel("loggerSpacer" + this._logID, "apiSpacer", document.getElementById("abcLogger"), "div");
+        tempEl.classList.add(this._logID % 2 ? "evenRow" : "oddRow");
         return this._logID;
     }
 
@@ -66,8 +69,10 @@ class abcLogger {
         this.apiTimer(this._logID);
         // add container to show API results (when the API returns)
         let elID = "json-renderer" + this._logID;
-        addHTMLel(elID, "json-editor-blackbord", document.getElementById("abcLogger"), "div");
-        addHTMLel("", "apiSpacer", document.getElementById("abcLogger"), "div");
+        let tempEl = addHTMLel(elID, "json-editor-blackbord", document.getElementById("abcLogger"), "div");
+        tempEl.classList.add(this._logID % 2 ? "evenRow" : "oddRow");
+        tempEl = addHTMLel("loggerSpacer" + this._logID, "apiSpacer", document.getElementById("abcLogger"), "div");
+        tempEl.classList.add(this._logID % 2 ? "evenRow" : "oddRow");
         return this._logID;
     }
 
