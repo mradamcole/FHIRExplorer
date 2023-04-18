@@ -16,6 +16,7 @@
 
     <!--  Logger  -->
     <link rel="stylesheet" type="text/css" href="assets/css/logger.css" />
+    <link rel="stylesheet" type="text/css" href="assets/css/sidepanelSplit.css" />
 
     <!--  JSON Viewer  -->
     <link rel="stylesheet" type="text/css" href="assets/css/jquery.json-viewer.css" />
@@ -145,14 +146,14 @@
             cursor: pointer;
         }
 
-        .mockEMRContainer li {
+        .mockEMRContainer .dsList li {
             border: 1px solid #ccc;
             background-color: #fff;
             padding: 3px 10px;
             margin: 2px;
         }
 
-        .mockEMRContainer li:hover {
+        .mockEMRContainer .dsList li:hover {
             border: 1px solid #444;
             background-color: var(--rowHighlightColor);
             cursor: pointer;
@@ -508,6 +509,20 @@
         //Window resize actions
         winResizeEvent = () => {
             document.getElementById("abcLogger").style.height = window.innerHeight + "px";
+            updateStyleRule(":root", "--viewportWidth", window.innerWidth + "px");
+        }
+
+
+        //Pseudo-animate resizing of the side panel. (Change a CSS variable over time to cause the animation; easier than animating all the elements based on this variable)
+        sidepanelResize = (sizeFrom, sizeTo, steps, curStep = 0) => {
+            sizeFrom = parseInt(sizeFrom);
+            sizeTo = parseInt(sizeTo);
+            updateStyleRule(":root", "--sidepanelWidth", `${(sizeTo - sizeFrom) / steps * curStep + sizeFrom}px`);
+            if (curStep < steps) {
+                setTimeout(() => {
+                    sidepanelResize(sizeFrom, sizeTo, steps, ++curStep);
+                }, 10);
+            }
         }
 
         //Page loaded functions
@@ -517,17 +532,24 @@
 
             changeServer();
 
-            //Sidepanel expand/contract. Atrribution: https://codepen.io/aydin4ik
             $('.circle').click(function () {
-                let spWidth = $('.sidepanel').width();
-                let spMarginLeft = parseInt($('.sidepanel').css('margin-left'), 10);
-                let w = (spMarginLeft > 0) ? 0 : spWidth;
-                let cw = (w <= 0) ? -11 : -22;
-                $('.sidepanel').animate({
-                    marginLeft: w,
-                });
+                let expanded = document.getElementById("sidepanelOutside").getAttribute("expanded");
+                if (expanded === "false") expanded = false; // "false" != false
+                let expandedWidth = getComputedStyle(document.querySelector(":root")).getPropertyValue("--sidepanelExpandedWidth");
+                var fromSize, toSize;
+                if (expanded) {
+                    fromSize = expandedWidth;
+                    toSize = 0;
+                    document.getElementById("sidepanelOutside").setAttribute("expanded", "false");
+                } else {
+                    fromSize = 0;
+                    toSize = expandedWidth;
+                    document.getElementById("sidepanelOutside").setAttribute("expanded", "true");
+                }
+                sidepanelResize(fromSize, toSize, 20);
+                let circleLeft = (expanded) ? -6 : 5;
                 $('.circle').animate({
-                    left: cw
+                    "margin-left": circleLeft
                 }, function () {
                     $('.fa-chevron-left').toggleClass('hide');
                     $('.fa-chevron-right').toggleClass('hide');
@@ -549,243 +571,249 @@
 
 <body>
 
-    <div class="mockEMRContainer">
-        <!-- MockEMR Heading row -->
-        <div class="rowTitle">
-            <span class="headingTitle2" style="margin-left: 10px;">
-                </i> Demo <i class="fa fa-arrow-circle-right"></i> Clinical Reasoning <i class="fa fa-arrow-circle-right"></i> Care Gaps <i class="fa fa-recycle resetDemo"></i>
-            </span>
-            <span class="alignRight">
-                <span class="headingTitle">&nbsp;&nbsp;&nbsp;Mock EMR&nbsp;&nbsp;&nbsp;</span>
-                <img src="assets/img/sdh200.png" height="40">
-            </span>
-        </div>
+    <div id="sidepanelOutside" class="sidepanelOutside">
+        <div id="sidepanelLeft" class="sidepanelLeft">
+            <div class="mockEMRContainer">
+                <!-- MockEMR Heading row -->
+                <div class="rowTitle">
+                    <span class="headingTitle2" style="margin-left: 10px;">
+                        </i> Demo <i class="fa fa-arrow-circle-right"></i> Clinical Reasoning <i class="fa fa-arrow-circle-right"></i> Care Gaps <i class="fa fa-recycle resetDemo"></i>
+                    </span>
+                    <span class="alignRight">
+                        <span class="headingTitle">&nbsp;&nbsp;&nbsp;Mock EMR&nbsp;&nbsp;&nbsp;</span>
+                        <img src="assets/img/sdh200.png" height="40">
+                    </span>
+                </div>
 
-        <!-- MockEMR Main Body -->
-        <div class="rowBody">
-            <div class="bodyRow">
-                <!-- ********** START: Mock EMR Content ********** -->
+                <!-- MockEMR Main Body -->
+                <div class="rowBody">
+                    <div class="bodyRow">
+                        <!-- ********** START: Mock EMR Content ********** -->
 
-                <!-- START: Stepped Progress Bar -->
-                <div class="step-1" id="steppedProgressBar" data-current-step="1" style="top: 10px;">
-                    <div class="progress-bar">
+                        <!-- START: Stepped Progress Bar -->
+                        <div class="step-1" id="steppedProgressBar" data-current-step="1" style="top: 10px;">
+                            <div class="progress-bar">
 
-                        <div class="step step-1 active"><span> 1</span>
-                            <div class="fa fa-check opaque"></div>
-                            <div class="step-label"> Introduction</div>
-                        </div>
-                        <div class="step step-2"><span> 2</span>
-                            <div class="fa fa-check opaque"></div>
-                            <div class="step-label">
-                                Care Gap List
-                                <p class="spbSubHeading">
-                                    <i class="fa fa-user" style="width: 12px;"></i> Clinic Administrator<br>
-                                    <i class="fa fa-calendar" style="width: 12px;"></i> Today
-                                </p>
-                            </div>
-                        </div>
-                        <div class="step step-3"><span> 3</span>
-                            <div class="fa fa-check opaque"></div>
-                            <div class="step-label">
-                                Patient Encounter<br>
-                                <p class="spbSubHeading">
-                                    <i class="fa fa-user" style="width: 12px;"></i> Doctor<br>
-                                    <i class="fa fa-calendar" style="width: 12px;"></i> Today
-                                </p>
-                            </div>
-                        </div>
-                        <div class="step step-4"><span> 4</span>
-                            <div class="fa fa-check opaque"></div>
-                            <div class="step-label">
-                                Screening Test Ordered<br>
-                                <p class="spbSubHeading">
-                                    <i class="fa fa-user" style="width: 12px;"></i> Doctor<br>
-                                    <i class="fa fa-calendar" style="width: 12px;"></i> Today
-                                </p>
-                            </div>
-                        </div>
-                        <div class="step step-5"><span> 5</span>
-                            <div class="fa fa-check opaque"></div>
-                            <div class="step-label">
-                                Test Performed<br>
-                                <p class="spbSubHeading">
-                                    <i class="fa fa-user" style="width: 12px;"></i> Patient<br>
-                                    <i class="fa fa-calendar" style="width: 12px;"></i> This week
-                                </p>
-                            </div>
-                        </div>
-                        <div class="step step-6"><span> 6</span>
-                            <div class="fa fa-check opaque"></div>
-                            <div class="step-label">
-                                Subsequent Pt Encounter<br>
-                                <p class="spbSubHeading">
-                                    <i class="fa fa-user" style="width: 12px;"></i> Doctor<br>
-                                    <i class="fa fa-calendar" style="width: 12px;"></i> +30 days
-                                </p>
+                                <div class="step step-1 active"><span> 1</span>
+                                    <div class="fa fa-check opaque"></div>
+                                    <div class="step-label"> Introduction</div>
+                                </div>
+                                <div class="step step-2"><span> 2</span>
+                                    <div class="fa fa-check opaque"></div>
+                                    <div class="step-label">
+                                        Care Gap List
+                                        <p class="spbSubHeading">
+                                            <i class="fa fa-user" style="width: 12px;"></i> Clinic Administrator<br>
+                                            <i class="fa fa-calendar" style="width: 12px;"></i> Today
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="step step-3"><span> 3</span>
+                                    <div class="fa fa-check opaque"></div>
+                                    <div class="step-label">
+                                        Patient Encounter<br>
+                                        <p class="spbSubHeading">
+                                            <i class="fa fa-user" style="width: 12px;"></i> Doctor<br>
+                                            <i class="fa fa-calendar" style="width: 12px;"></i> Today
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="step step-4"><span> 4</span>
+                                    <div class="fa fa-check opaque"></div>
+                                    <div class="step-label">
+                                        Screening Test Ordered<br>
+                                        <p class="spbSubHeading">
+                                            <i class="fa fa-user" style="width: 12px;"></i> Doctor<br>
+                                            <i class="fa fa-calendar" style="width: 12px;"></i> Today
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="step step-5"><span> 5</span>
+                                    <div class="fa fa-check opaque"></div>
+                                    <div class="step-label">
+                                        Test Performed<br>
+                                        <p class="spbSubHeading">
+                                            <i class="fa fa-user" style="width: 12px;"></i> Patient<br>
+                                            <i class="fa fa-calendar" style="width: 12px;"></i> This week
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="step step-6"><span> 6</span>
+                                    <div class="fa fa-check opaque"></div>
+                                    <div class="step-label">
+                                        Subsequent Pt Encounter<br>
+                                        <p class="spbSubHeading">
+                                            <i class="fa fa-user" style="width: 12px;"></i> Doctor<br>
+                                            <i class="fa fa-calendar" style="width: 12px;"></i> +30 days
+                                        </p>
+                                    </div>
+                                </div>
+
                             </div>
                         </div>
 
+                        <div id="spbContentContainer" style="position: relative; top: 100px;">
+
+                            <section id="spbSection1" class="spbSection1" style="display:block;">
+                                <div style="font-size: 18px; margin: 5px 20px 10px 20px;">
+                                    <p>The Gaps in Care report is a powerful tool that can result in better care outcomes, benefiting the payer (cost savings), the provider (time savings), and the
+                                        patient
+                                        (better health outcomes).</p>
+                                    <p>This scenario starts with a Population Health Manager employing the Care Gap Work List to monitor a patient population for gaps in care. They will identify
+                                        patients
+                                        with gaps related to the Colorectal Cancer Screening Quality Measure. Then they can easily manage these patients through the recommended CPG to gap closure.</p>
+                                    <p>During the patient visit, the Digital Quality Measures module requests a gaps in care report from the payer. The clinician is notified of the resulting gaps in
+                                        care
+                                        and
+                                        the Clinical Decision Support module provides the clinician with a recommendation for how to address the gap based on the American Cancer Society Guideline for
+                                        Colorectal Cancer Screening.</p>
+                                    <p>Once the recommended intervention has been completed, the Digital Quality Measure module submits the new "quality" data to the payer.</p>
+                                    <p>During a subsequent patient visit the Digital Quality Measure module requests a new gaps in care report from the payer, which then shows the gap has been closed.
+                                    </p>
+                                    <input type="button" class="button" value="Start Care Gaps Demo" onclick="Logger.addTextLog('Care Gap Demo Started'); spbNext();">
+                                </div>
+                            </section>
+
+                            <section id="spbSection2" class="spbSection2" style="display:none;">
+                                <div id="dqmPtList" style="margin: 20px; text-align: center; font-size: 18px; color: #d0d0d0; font-weight:bold;">Retrieving Care Gaps...</div>
+                                <script>
+                                    var dqmPtList;
+                                    dqmPtList_render = () => {
+                                        dqmPtList = new Tabulator("#dqmPtList", {
+                                            data: dqmPtListData, //assign data to table
+                                            height: 305, // set height of table (in CSS or here), this enables the Virtual DOM and improves render speed dramatically (can be any valid css height value)
+                                            layout: "fitColumns", //fit columns to width of table (optional)
+                                            index: "detectedIssueID", //set the index field (~=PK) to what should be a guaranteed unique value
+                                            placeholder: 'Retrieving Open Care Gaps List<br><img src="assets/img/spinner3.gif" height="40">',
+                                            columns: [ //Define Table Columns
+                                                { title: "detectedIssueID", field: "detectedIssueID", hozAlign: "left", visible: false },
+                                                { title: "ptID", field: "ptID", hozAlign: "left", visible: false },
+                                                { title: "Patient", field: "ptNameLF", hozAlign: "left", minWidth: 300, headerSort: false },
+                                                { title: "Care Gap", field: "careGapName", hozAlign: "left", minWidth: 300, headerSort: false },
+                                                { title: "Status", field: "careGapStatusValue", hozAlign: "left", minWidth: 80, headerSort: false },
+                                                { title: "Days open", field: "measureReportAging", hozAlign: "left", minWidth: 80, headerSort: false },
+                                                { title: "Next Appointment", field: "nextAppointment", sorter: "date", hozAlign: "left", minWidth: 200, headerSort: false, formatter: "html" },
+                                            ],
+                                        });
+
+                                        //trigger an alert message when the row is clicked
+                                        dqmPtList.on("rowClick", function (e, row) {
+                                            dataParams.curCareGap = row.getData();
+                                            spbNext();
+                                            Logger.addTextLog("Care Gap ID: " + row.getData().detectedIssueID + " selected");
+                                        });
+                                    }
+                                </script>
+                            </section>
+
+                            <section id="spbSection3" class="spbSection3" style="display:none; text-align: center;">
+                                <img src="assets/img/ehr-ghost.png" style="width: 100%; max-width: 2000px; filter: blur(2px) contrast(75%) brightness(120%);">
+                                <div style="border: 3px solid #000; background-color: #ffffffe0; width: 60%; height: 480px; position: absolute; top: 100px; margin-left: 20%;">
+                                    <div style="width: 100%; text-align: center; background-color: #6D6E71; font: 900 18px; color: #fff;">Care Gap Report</div><br>
+                                    <div>Select an open Care Gap below to initiate closing it.<br><br></div>
+                                    <table style="width: 90%; padding: 2px 10px; margin: 0px 5%;">
+                                        <tr>
+                                            <td colspan="2" style="background-color: #2C3E50; color: #fff; font-weight: 900;"><span id="cgrPtName"></span></td>
+                                        </tr>
+                                        <tr>
+                                            <td colspan="2" style="background-color: #8ac; color: #fff;">Open Care Gaps</td>
+                                        </tr>
+                                        <tr>
+                                            <td style="background-color: #79CEF2;">Care Gap</td>
+                                            <td style="background-color: #79CEF2;">Days Open</td>
+                                        </tr>
+                                        <tr class="cgrRow" onclick="spbNext()">
+                                            <td><span id="cgrCareGap"></span></td>
+                                            <td><span id="cgrDaysOpen"></span></td>
+                                        </tr>
+                                        <tr>
+                                            <td colspan="2">&nbsp;</td>
+                                        </tr>
+                                        <tr>
+                                            <td colspan="2" style="background-color: #8ac; border-top: 1px solid #2c3e50; color: #fff;">Recently Closed Care Gaps (last 90 days)</td>
+                                        </tr>
+                                        <tr>
+                                            <td style="background-color: #79CEF2;">Care Gap</td>
+                                            <td style="background-color: #79CEF2;">Closed days</td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </section>
+
+                            <section id="spbSection4" class="spbSection4" style="display:none;">
+                                <img src="assets/img/ehr-ghost.png" style="width: 100%; max-width: 2000px; filter: blur(2px) contrast(75%) brightness(120%);">
+                                <div style="border: 3px solid #000; background-color: #ffffffe0; width: 60%; height: 480px; position: absolute; top: 100px; margin-left: 20%;">
+                                    <div style="width: 100%; text-align: center; background-color: #6D6E71; font: 900 18px; color: #fff;">Care Gap Report</div><br>
+                                    <div style="text-align: center;">Order any of the screening tests below to close the <span id="cgrCareGap2" style="font-weight: bold;"></span> Care Gap.<br>
+                                    </div>
+                                    <div style="width: fit-content; margin-left: auto; margin-right: auto;">
+                                        <ul id="lrLabReqList" class="dsList" style="list-style: none; padding-left: 0px;">
+                                            <center><img src="assets/img/spinner3.gif" height="40"></center>
+                                        </ul>
+                                    </div>
+                                    <div style="margin-left: 100px; margin-right: 100px; font-size: smaller;" id="lrDSRecommendation"></div>
+                                    <div style="width: fit-content; margin-left: auto; margin-right: auto; visibility: hidden;" id="lrSubmitButton">
+                                        <input type="button" class="button" value="Order Screening Test(s)" onclick="spbNext()">
+                                    </div>
+                                </div>
+                            </section>
+
+                            <section id="spbSection5" class="spbSection5" style="display:none;">
+                                <div id="cgrLabTestDetails"></div>
+                            </section>
+
+                            <section id="spbSection6" class="spbSection6" style="display:none; text-align: center;">
+                                <div id="dqmPtList2" style="margin: 20px; text-align: center; font-size: 18px; color: #d0d0d0; font-weight:bold;">Retrieving Care Gaps...</div>
+                                <script>
+                                    var dqmPtList2;
+                                    dqmPtList2_render = () => {
+                                        dqmPtList2 = new Tabulator("#dqmPtList2", {
+                                            data: dqmPtListData, //assign data to table
+                                            height: 305, // set height of table (in CSS or here), this enables the Virtual DOM and improves render speed dramatically (can be any valid css height value)
+                                            layout: "fitColumns", //fit columns to width of table (optional)
+                                            index: "detectedIssueID", //set the index field (~=PK) to what should be a guaranteed unique value
+                                            placeholder: 'Retrieving Open Care Gaps List<br><img src="assets/img/spinner3.gif" height="40">',
+                                            columns: [ //Define Table Columns
+                                                { title: "detectedIssueID", field: "detectedIssueID", hozAlign: "left", visible: false },
+                                                { title: "ptID", field: "ptID", hozAlign: "left", visible: false },
+                                                { title: "Patient", field: "ptNameLF", hozAlign: "left", minWidth: 300, headerSort: false },
+                                                { title: "Care Gap", field: "careGapName", hozAlign: "left", minWidth: 300, headerSort: false },
+                                                { title: "Status", field: "careGapStatusValue", hozAlign: "left", minWidth: 80, headerSort: false },
+                                                { title: "Days open", field: "measureReportAging", hozAlign: "left", minWidth: 80, headerSort: false },
+                                                { title: "Next Appointment", field: "nextAppointment", sorter: "date", hozAlign: "left", minWidth: 200, headerSort: false, formatter: "html" },
+                                            ],
+                                        });
+
+                                        //trigger an alert message when the row is clicked
+                                        dqmPtList2.on("rowClick", function (e, row) {
+                                            dataParams.curCareGap = row.getData();
+                                            alert("Click the reset button (the recycling icon in the header bar) to restart this demo.")
+                                        });
+                                    }
+                                </script>
+                            </section>
+                        </div>
+                        <!-- END: Stepped Progress Bar -->
+
+
+                        <!-- ********** END: Mock EMR Content ********** -->
                     </div>
                 </div>
 
-                <div id="spbContentContainer" style="position: relative; top: 100px;">
-
-                    <section id="spbSection1" class="spbSection1" style="display:block;">
-                        <div style="font-size: 18px; margin: 5px 20px 10px 20px;">
-                            <p>The Gaps in Care report is a powerful tool that can result in better care outcomes, benefiting the payer (cost savings), the provider (time savings), and the patient
-                                (better health outcomes).</p>
-                            <p>This scenario starts with a Population Health Manager employing the Care Gap Work List to monitor a patient population for gaps in care. They will identify patients
-                                with gaps related to the Colorectal Cancer Screening Quality Measure. Then they can easily manage these patients through the recommended CPG to gap closure.</p>
-                            <p>During the patient visit, the Digital Quality Measures module requests a gaps in care report from the payer. The clinician is notified of the resulting gaps in care and
-                                the Clinical Decision Support module provides the clinician with a recommendation for how to address the gap based on the American Cancer Society Guideline for
-                                Colorectal Cancer Screening.</p>
-                            <p>Once the recommended intervention has been completed, the Digital Quality Measure module submits the new “quality” data to the payer.</p>
-                            <p>During a subsequent patient visit the Digital Quality Measure module requests a new gaps in care report from the payer, which then shows the gap has been closed.</p>
-                            <input type="button" class="button" value="Start Care Gaps Demo" onclick="Logger.addTextLog('Care Gap Demo Started'); spbNext();">
-                        </div>
-                    </section>
-
-                    <section id="spbSection2" class="spbSection2" style="display:none;">
-                        <div id="dqmPtList" style="margin: 20px; text-align: center; font-size: 18px; color: #d0d0d0; font-weight:bold;">Retrieving Care Gaps...</div>
-                        <script>
-                            var dqmPtList;
-                            dqmPtList_render = () => {
-                                dqmPtList = new Tabulator("#dqmPtList", {
-                                    data: dqmPtListData, //assign data to table
-                                    height: 305, // set height of table (in CSS or here), this enables the Virtual DOM and improves render speed dramatically (can be any valid css height value)
-                                    layout: "fitColumns", //fit columns to width of table (optional)
-                                    index: "detectedIssueID", //set the index field (~=PK) to what should be a guaranteed unique value
-                                    placeholder: 'Retrieving Open Care Gaps List<br><img src="assets/img/spinner3.gif" height="40">',
-                                    columns: [ //Define Table Columns
-                                        { title: "detectedIssueID", field: "detectedIssueID", hozAlign: "left", visible: false },
-                                        { title: "ptID", field: "ptID", hozAlign: "left", visible: false },
-                                        { title: "Patient", field: "ptNameLF", hozAlign: "left", minWidth: 300, headerSort: false },
-                                        { title: "Care Gap", field: "careGapName", hozAlign: "left", minWidth: 300, headerSort: false },
-                                        { title: "Status", field: "careGapStatusValue", hozAlign: "left", minWidth: 80, headerSort: false },
-                                        { title: "Days open", field: "measureReportAging", hozAlign: "left", minWidth: 80, headerSort: false },
-                                        { title: "Next Appointment", field: "nextAppointment", sorter: "date", hozAlign: "left", minWidth: 200, headerSort: false, formatter: "html" },
-                                    ],
-                                });
-
-                                //trigger an alert message when the row is clicked
-                                dqmPtList.on("rowClick", function (e, row) {
-                                    dataParams.curCareGap = row.getData();
-                                    spbNext();
-                                    Logger.addTextLog("Care Gap ID: " + row.getData().detectedIssueID + " selected");
-                                });
-                            }
-                        </script>
-                    </section>
-
-                    <section id="spbSection3" class="spbSection3" style="display:none; text-align: center;">
-                        <img src="assets/img/ehr-ghost.png" style="width: 100%; max-width: 2000px; filter: blur(2px) contrast(75%) brightness(120%);">
-                        <div style="border: 3px solid #000; background-color: #ffffffe0; width: 60%; height: 400px; position: relative; top: -450px; margin-left: 20%;">
-                            <div style="width: 100%; text-align: center; background-color: #6D6E71; font: 900 18px; color: #fff;">Care Gap Report</div><br>
-                            <div>Select an open Care Gap below to initiate closing it.<br><br></div>
-                            <table style="width: 90%; padding: 2px 10px; margin: 0px 5%;">
-                                <tr>
-                                    <td colspan="2" style="background-color: #2C3E50; color: #fff; font-weight: 900;"><span id="cgrPtName"></span></td>
-                                </tr>
-                                <tr>
-                                    <td colspan="2" style="background-color: #8ac; color: #fff;">Open Care Gaps</td>
-                                </tr>
-                                <tr>
-                                    <td style="background-color: #79CEF2;">Care Gap</td>
-                                    <td style="background-color: #79CEF2;">Days Open</td>
-                                </tr>
-                                <tr class="cgrRow" onclick="spbNext()">
-                                    <td><span id="cgrCareGap"></span></td>
-                                    <td><span id="cgrDaysOpen"></span></td>
-                                </tr>
-                                <tr>
-                                    <td colspan="2">&nbsp;</td>
-                                </tr>
-                                <tr>
-                                    <td colspan="2" style="background-color: #8ac; border-top: 1px solid #2c3e50; color: #fff;">Recently Closed Care Gaps (last 90 days)</td>
-                                </tr>
-                                <tr>
-                                    <td style="background-color: #79CEF2;">Care Gap</td>
-                                    <td style="background-color: #79CEF2;">Closed days</td>
-                                </tr>
-                            </table>
-                        </div>
-                    </section>
-
-                    <section id="spbSection4" class="spbSection4" style="display:none;">
-                        <img src="assets/img/ehr-ghost.png" style="width: 100%; max-width: 2000px; filter: blur(2px) contrast(75%) brightness(120%);">
-                        <div style="border: 3px solid #000; background-color: #ffffffe0; width: 60%; height: 400px; position: relative; top: -450px; margin-left: 20%;">
-                            <div style="width: 100%; text-align: center; background-color: #6D6E71; font: 900 18px; color: #fff;">Care Gap Report</div><br>
-                            <div style="text-align: center;">Order any of the screening tests below to close the <span id="cgrCareGap2" style="font-weight: bold;"></span> Care Gap.<br>
-                            </div>
-                            <div style="width: fit-content; margin-left: auto; margin-right: auto;">
-                                <ul id="lrLabReqList" style="list-style: none; padding-left: 0px;">
-                                    <center><img src="assets/img/spinner3.gif" height="40"></center>
-                                </ul>
-                            </div>
-                            <div style="margin-left: 100px; margin-right: 100px; font-size: smaller;" id="lrDSRecommendation"></div><br>
-                            <div style="width: fit-content; margin-left: auto; margin-right: auto; visibility: hidden;" id="lrSubmitButton">
-                                <input type="button" class="button" value="Order Screening Test(s)" onclick="spbNext()">
-                            </div>
-                        </div>
-                    </section>
-
-                    <section id="spbSection5" class="spbSection5" style="display:none;">
-                        <div id="cgrLabTestDetails"></div>
-                    </section>
-
-                    <section id="spbSection6" class="spbSection6" style="display:none; text-align: center;">
-                        <div id="dqmPtList2" style="margin: 20px; text-align: center; font-size: 18px; color: #d0d0d0; font-weight:bold;">Retrieving Care Gaps...</div>
-                        <script>
-                            var dqmPtList2;
-                            dqmPtList2_render = () => {
-                                dqmPtList2 = new Tabulator("#dqmPtList2", {
-                                    data: dqmPtListData, //assign data to table
-                                    height: 305, // set height of table (in CSS or here), this enables the Virtual DOM and improves render speed dramatically (can be any valid css height value)
-                                    layout: "fitColumns", //fit columns to width of table (optional)
-                                    index: "detectedIssueID", //set the index field (~=PK) to what should be a guaranteed unique value
-                                    placeholder: 'Retrieving Open Care Gaps List<br><img src="assets/img/spinner3.gif" height="40">',
-                                    columns: [ //Define Table Columns
-                                        { title: "detectedIssueID", field: "detectedIssueID", hozAlign: "left", visible: false },
-                                        { title: "ptID", field: "ptID", hozAlign: "left", visible: false },
-                                        { title: "Patient", field: "ptNameLF", hozAlign: "left", minWidth: 300, headerSort: false },
-                                        { title: "Care Gap", field: "careGapName", hozAlign: "left", minWidth: 300, headerSort: false },
-                                        { title: "Status", field: "careGapStatusValue", hozAlign: "left", minWidth: 80, headerSort: false },
-                                        { title: "Days open", field: "measureReportAging", hozAlign: "left", minWidth: 80, headerSort: false },
-                                        { title: "Next Appointment", field: "nextAppointment", sorter: "date", hozAlign: "left", minWidth: 200, headerSort: false, formatter: "html" },
-                                    ],
-                                });
-
-                                //trigger an alert message when the row is clicked
-                                dqmPtList2.on("rowClick", function (e, row) {
-                                    dataParams.curCareGap = row.getData();
-                                    alert("Click the reset button (the recycling icon in the header bar) to restart this demo.")
-                                });
-                            }
-                        </script>
-                    </section>
-                </div>
-                <!-- END: Stepped Progress Bar -->
-
-
-                <!-- ********** END: Mock EMR Content ********** -->
-            </div>
+                <!-- MockEMR Footer row -->
+                <div id="mockEMRFooter" class="rowFooter">&nbsp;Care Gaps Demo v1.0.6</div>
+            </div> <!-- END: MockEMR -->
         </div>
 
-        <!-- MockEMR Footer row -->
-        <div id="mockEMRFooter" class="rowFooter">&nbsp;Care Gaps Demo v1.0.6</div>
-    </div>
-
-    <!-- START: Sidepanel -->
-    <div class="sidepanelContainer">
-        <div class="sidepanel">
+        <div id="sidepanelRight" class="sidepanelContainer">
             <div id="abcLogger" class="abcAPIContainer"></div>
-            <div class="circle">
-                <i class="fa fa-chevron-left" aria-hidden="true"></i>
-                <i class="fa fa-chevron-right hide" aria-hidden="true"></i>
-            </div>
         </div>
-    </div>
-    <!-- END: Sidepanel -->
+
+        <div class="circle">
+            <i class="fa fa-chevron-left" aria-hidden="true"></i>
+            <i class="fa fa-chevron-right hide" aria-hidden="true"></i>
+        </div>
+    </div> <!-- END: Sidepanel -->
 
 </body>
 
@@ -813,3 +841,8 @@
 <script src="assets/js/fhirpath.r4.min.js"></script> -->
 
 </html>
+
+<!-- TODO:
+1. Make RESET button (recycle icon) functional -- either refresh the page, or delete the resources and then refresh the page
+2. Make the sidepanel rotate between abcLogger and demoNarration
+-->
