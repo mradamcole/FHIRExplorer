@@ -2,7 +2,7 @@
     /* current and starting width; this value can change */
     --sidepanelWidth: 0px;
     /* expanded state width; this value is static */
-    --sidepanelExpandedWidth: 480px;
+    --sidepanelExpandedWidth: 600px;
     /* The portion of the sidepanel tab that sticks out when the sidepanel is closed */
     --sidepanelTab: 22px;
     --viewportWidth: 1260px;
