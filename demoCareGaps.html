@@ -10,7 +10,8 @@
     <link rel="icon" type="image/png" sizes="16x16" href="assets/favicon/favicon-16x16.png">
 
     <!--  Fonts and icons -->
-    <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/font-awesome/latest/css/font-awesome.min.css" rel="stylesheet">
+    <!-- <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/font-awesome/latest/css/font-awesome.min.css" rel="stylesheet"> -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Material+Icons" />
     <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 
@@ -23,6 +24,12 @@
 
     <!-- Stepped Progress Bar -->
     <link rel="stylesheet" type="text/css" href="assets/css/steppedProgress.css" rel="stylesheet">
+
+    <!-- Flip card -->
+    <link rel="stylesheet" type="text/css" href="assets/css/flipcard.css" rel="stylesheet">
+
+    <!-- Resizing tabs -->
+    <link rel="stylesheet" type="text/css" href="assets/css/resizingTabs.css" rel="stylesheet">
 
     <!-- CSS: Tabulator (fhirGrid) -->
     <!-- <link href="https://unpkg.com/tabulator-tables/dist/css/tabulator.min.css" rel="stylesheet"> -->
@@ -46,122 +53,124 @@
             height: 100vh;
             overflow: auto;
             box-sizing: border-box;
-        }
 
-        .mockEMRContainer pre,
-        .mockEMRContainer span,
-        .mockEMRContainer div {
-            /* Set width to 1 for debugging */
-            border: 0px solid #0f0;
-            box-sizing: border-box;
-        }
+            & pre,
+            & span,
+            & div {
+                /* Set width to 1 for debugging */
+                border: 0px solid #0f0;
+                box-sizing: border-box;
+            }
 
-        .mockEMRContainer .rowTitle {
-            min-height: 40px;
-            background: #8ac;
-            display: flex;
-            align-items: center;
-            filter: drop-shadow(0px 1px 2px #000);
-        }
 
-        .mockEMRContainer .rowTitle .alignRight {
-            margin-left: auto;
-            margin-right: 20px;
-            display: flex;
-            align-items: center;
-        }
+            & .rowTitle {
+                min-height: 40px;
+                background: #8ac;
+                display: flex;
+                align-items: center;
+                filter: drop-shadow(0px 1px 2px #000);
+            }
 
-        .mockEMRContainer .headingTitle {
-            font: oblique bold 24px arial;
-            color: #fff;
-            filter: drop-shadow(0px 0px 2px #000);
-        }
 
-        .mockEMRContainer .headingTitle2 {
-            font: bold 16px arial;
-            color: #fff;
-        }
+            & .rowTitle .alignRight {
+                margin-left: auto;
+                margin-right: 20px;
+                display: flex;
+                align-items: center;
+            }
 
-        .mockEMRContainer .rowBody {
-            flex: 1;
-            /* overflow-y: auto; */
-            overflow-y: hidden;
-            overflow-x: hidden;
-            margin: 5px 5px 0px 5px;
-        }
+            & .headingTitle {
+                font: oblique bold 24px arial;
+                color: #fff;
+                filter: drop-shadow(0px 0px 2px #000);
+            }
 
-        .mockEMRContainer .rowFooter {
-            font: 14px arial;
-            color: #fff;
-            background: #8ac;
-            filter: drop-shadow(0px 1px 2px #000);
-        }
+            & .headingTitle2 {
+                font: bold 16px arial;
+                color: #fff;
+            }
 
-        .mockEMRContainer .bodyRow {
-            width: 100%;
-            height: 100%;
-            background-color: #fff;
-        }
+            & .rowBody {
+                flex: 1;
+                /* overflow-y: auto; */
+                overflow-y: hidden;
+                overflow-x: hidden;
+                margin: 5px 5px 0px 5px;
+            }
 
-        .mockEMRContainer .bodyRow .emr {
-            width: 60%;
-            height: 100%;
-            background-color: #cef;
-        }
+            & .rowFooter {
+                font: 14px arial;
+                color: #fff;
+                background: #8ac;
+                filter: drop-shadow(0px 1px 2px #000);
+            }
 
-        .mockEMRContainer .bodyRow .abcAPIContainer {
-            flex: 1;
-            overflow: auto;
-            height: 100%;
-        }
+            & .bodyRow {
+                width: 100%;
+                height: 100%;
+                background-color: #fff;
+            }
 
-        .mockEMRContainer .resetDemo {
-            color: rgba(0, 0, 0, 0.3);
-            cursor: pointer;
-        }
+            & .bodyRow .emr {
+                width: 60%;
+                height: 100%;
+                background-color: #cef;
+            }
 
-        .mockEMRContainer .button {
-            background-color: #8ac;
-            border: none;
-            color: #fff;
-            font-weight: bold;
-            padding: 10px 20px;
-            text-align: center;
-            display: inline-block;
-            font-size: 16px;
-            border-radius: 5px;
-            border: 2px solid #ffffff00;
-        }
+            & .bodyRow .abcAPIContainer {
+                flex: 1;
+                overflow: auto;
+                height: 100%;
+            }
 
-        .mockEMRContainer .button:hover {
-            color: #8ac;
-            background-color: #1c2833;
-            border: 2px solid #8ac;
-            filter: drop-shadow(0px 0px 2px #8ac);
-            cursor: pointer;
-        }
+            & .resetDemo {
+                color: rgba(0, 0, 0, 0.3);
+                cursor: pointer;
+            }
 
-        .mockEMRContainer .cgrRow:hover {
-            background-color: var(--rowHighlightColor);
-            cursor: pointer;
-        }
+            & .button {
+                background-color: #8ac;
+                border: none;
+                color: #fff;
+                font-weight: bold;
+                padding: 10px 20px;
+                text-align: center;
+                display: inline-block;
+                font-size: 16px;
+                border-radius: 5px;
+                border: 2px solid #ffffff00;
+            }
 
-        .mockEMRContainer .dsList li {
-            border: 1px solid #ccc;
-            background-color: #fff;
-            padding: 3px 10px;
-            margin: 2px;
-        }
+            & .button:hover {
+                color: #8ac;
+                background-color: #1c2833;
+                border: 2px solid #8ac;
+                filter: drop-shadow(0px 0px 2px #8ac);
+                cursor: pointer;
+            }
 
-        .mockEMRContainer .dsList li:hover {
-            border: 1px solid #444;
-            background-color: var(--rowHighlightColor);
-            cursor: pointer;
-        }
+            & .cgrRow:hover {
+                background-color: var(--rowHighlightColor);
+                cursor: pointer;
+            }
 
-        .mockEMRContainer .text-focus-in {
-            position: relative;
-            animation: text-focus-in var(--textRevealDuration) linear;
+            & .dsList li {
+                border: 1px solid #ccc;
+                background-color: #fff;
+                padding: 3px 10px;
+                margin: 2px;
+            }
+
+            & .dsList li:hover {
+                border: 1px solid #444;
+                background-color: var(--rowHighlightColor);
+                cursor: pointer;
+            }
+
+            & .text-focus-in {
+                position: relative;
+                animation: text-focus-in var(--textRevealDuration) linear;
+            }
         }
 
         @keyframes text-focus-in {
@@ -366,6 +375,8 @@
 
         //Stepped Progress Bar onChange
         function spbChange() {
+            abcActorNext(); //Advance the story board (abcActor)
+
             let section = $('#steppedProgressBar').data('current-step');
             switch (section) {
                 case 2: //Populate the Care Gaps grid
@@ -406,6 +417,110 @@
                     break;
                 default:
                     break;
+            }
+        }
+
+        //Flip the card with the given cardID        
+        abcCardFlip = (cardID) => {
+            document.getElementById(cardID).classList.toggle('is-flipped');
+        }
+
+        //Define the contents for the story board (within abcActor)
+        let abcActorStage = 1;  //current actor story; see abcActorNext()
+        let abcActorActor;      //current actor; see abcActorNext()
+        abcActorNext = () => {
+            switch (abcActorStage) {
+                case 0:
+                    abcActorActor = "Admin"
+                    s = `<div class="abcStoryContent">
+                        <p>Loading...</p>
+                        </div>`;
+                    break;
+                case 1:
+                    abcActorActor = "Admin";
+                    s = `<div class="abcStoryContent">
+                        <p><i>As we progress through this demo we'll change actors between the Provider, Patient, and the Office Administrator. We'll let you know who the current actor is right here.</i></p>
+                        <p><i>Note: You can click the <i class="fa fa-repeat"></i> icon in the top-right to see the server interactions and learn how to integrate Care Gaps management
+                        into your environment. We suggest you run through the demo once before viewing the server interactions.</i></p>
+                    </div>`;
+                    break;
+                case 2:
+                    abcActorActor = "Admin";
+                    s = `<div class="abcStoryContent">
+                        <p>This scenario starts with a Clinical Support Staff using the Smile Digital Quality Measure module, Care Gap Worklist feature to monitor a patient population for
+                        gaps in care prospectively. They will identify patients at risk of open care gaps related to the Colorectal Cancer Screening Quality Measure. Then they can
+                        easily schedule an appointment so the patient and clinician can discuss options for ensuring recommended treatment to prevent a gap in care.</p>
+                        <p><i>You are now playing the role of an office <b>Admin</b>istrator. Select the patient at left to begin closing their open care gap.</i></p>
+                    </div>`;
+                    break;
+                case 3:
+                    abcActorActor = "Provider";
+                    s = `<div class="abcStoryContent">
+                        <p>During the patient visit, the Smile Digital Quality Measure module requests a Gaps in Care report. The clinician (provider) is notified of the resulting risks for gaps in care.</p>
+                        <p><i>Within your EMR, Select <b>Colorectal Cancer ScreeningFHIR</b> to start the process of closing it.</i></p>
+                        </div>`;
+                    break;
+                case 4:
+                    abcActorActor = "Provider";
+                    s = `<div class="abcStoryContent">
+                        <p>The Smile Clinical Decision Support module provides the clinician with treatment recommendations based on the evidence-based American Cancer Society’s Guidelines for Colorectal
+                            Cancer Screening to avoid a gap in care.</p>
+                        <p><i>You can go with the recommended procedure/test and/or select a different one.</i></p>
+                    </div>`;
+                    break;
+                case 5:
+                    abcActorActor = "Patient";
+                    s = `<div class="abcStoryContent">
+                        <p>Once the recommended intervention has been completed, the data relative to the Colorectal Cancer Screening Quality Measure is submitted to the Smile Digital Quality Measure server.</p>
+                    </div>`;
+                    break;
+                case 6:
+                    abcActorActor = "Provider";
+                    s = `<div class="abcStoryContent">
+                        <p>During a subsequent patient visit, the Smile Digital Quality Measure module requests a new Gaps in Care report, which then shows that the patient has received treatment that meets the
+                            Colorectal Cancer Screening Quality Measure requirements.  The care gap risk has been proactively mitigated.</p>
+                        <p><i>To reset the data on the server and restart the demo, click the <i class="fa fa-recycle resetDemo"></i> icon in the title at top left.</i></p>
+                    </div>`;
+                    break;
+            }
+            abcActorStage++;
+            abcActorFocus("abcStory" + abcActorActor, s);
+        }
+
+        //Animate the transition when between story boards, i.e. shift focus to another actor/tab {Provider, Patient, Admin} (within abcActor)
+        async function abcActorFocus(actorNew, content) {
+            actorNew = document.getElementById(actorNew);
+            const actorOld = document.getElementsByClassName("focus")[0];
+            const sectionOld = document.getElementById(actorOld.id + "Main");
+            const sectionNew = document.getElementById(actorNew.id + "Main");
+            addTransition(actorOld, { //background tab
+                flex: 2,
+                opacity: .5,
+                "margin-top": "2px",
+            }, 1000);
+            addTransition(actorNew, {   //foreground tab
+                flex: 5,
+                opacity: 1,
+                "border-bottom": "1px solid #e94;",
+                "margin-top": "-2px",
+            }, 1000);
+            await addTransition(sectionOld, {   //story content to fade out
+                opacity: 0,
+            }, 200);
+            sectionOld.style.display = "none";
+            sectionNew.style.display = "block";
+            sectionNew.style.opacity = 0;
+            sectionNew.innerHTML = content;
+            setTimeout(() => {  //await was giving me a difficult time, so I just went with a timeout
+                addTransition(sectionNew, { //story content to fade in
+                    opacity: 1,
+                }, 500);
+            }, 300);
+            if (actorOld.id != actorNew.id) {
+                actorNew.classList.add("focus");
+                actorNew.classList.remove("regular");
+                actorOld.classList.add("regular");
+                actorOld.classList.remove("focus");
             }
         }
 
@@ -470,6 +585,22 @@
 
 
         /*************** Generic functions ***************/
+        //Apply a transition rule. A durationMs of 0 is ignored and the default duration value is used. (For an instantaneous transition use 1; 0 doesn't behave as a transitiion; opacity=0 to avoid jitter)
+        addTransition = (el, styleProps, durationMs = 0) => {
+            return new Promise((resolve, reject) => {
+                function handleTransitionEnd() {
+                    resolve(el);
+                }
+                el.addEventListener("transitionend", handleTransitionEnd, {
+                    once: true
+                });
+                if (durationMs > 0) el.style.setProperty("transition", `${durationMs}ms`);
+                Object.entries(styleProps).forEach(([prop, value]) => {
+                    el.style.setProperty(prop, value);
+                });
+            });
+        }
+
         //Update a CSS property. Optionally include a toggleVal, which will cause the CSS property to toggle between newVal and toggleVal
         updateStyleRule = (selectorVal, property, newVal, toggleVal = null) => {
             for (let i = 0; i < document.styleSheets.length; i++) {
@@ -511,7 +642,6 @@
             document.getElementById("abcLogger").style.height = window.innerHeight + "px";
             updateStyleRule(":root", "--viewportWidth", window.innerWidth + "px");
         }
-
 
         //Pseudo-animate resizing of the side panel. (Change a CSS variable over time to cause the animation; easier than animating all the elements based on this variable)
         sidepanelResize = (sizeFrom, sizeTo, steps, curStep = 0) => {
@@ -559,6 +689,8 @@
 
             dqmPtList_render();     //Initial patient encounter
             dqmPtList2_render();    //Follow-up visit
+
+            abcActorNext();     //Set the abcActor to the first story board
         });
 
         window.addEventListener('resize', function () {
@@ -602,50 +734,30 @@
                                     <div class="fa fa-check opaque"></div>
                                     <div class="step-label">
                                         Care Gap List
-                                        <p class="spbSubHeading">
-                                            <i class="fa fa-user" style="width: 12px;"></i> Clinic Administrator<br>
-                                            <i class="fa fa-calendar" style="width: 12px;"></i> Today
-                                        </p>
                                     </div>
                                 </div>
                                 <div class="step step-3"><span> 3</span>
                                     <div class="fa fa-check opaque"></div>
                                     <div class="step-label">
                                         Patient Encounter<br>
-                                        <p class="spbSubHeading">
-                                            <i class="fa fa-user" style="width: 12px;"></i> Doctor<br>
-                                            <i class="fa fa-calendar" style="width: 12px;"></i> Today
-                                        </p>
                                     </div>
                                 </div>
                                 <div class="step step-4"><span> 4</span>
                                     <div class="fa fa-check opaque"></div>
                                     <div class="step-label">
                                         Screening Test Ordered<br>
-                                        <p class="spbSubHeading">
-                                            <i class="fa fa-user" style="width: 12px;"></i> Doctor<br>
-                                            <i class="fa fa-calendar" style="width: 12px;"></i> Today
-                                        </p>
                                     </div>
                                 </div>
                                 <div class="step step-5"><span> 5</span>
                                     <div class="fa fa-check opaque"></div>
                                     <div class="step-label">
                                         Test Performed<br>
-                                        <p class="spbSubHeading">
-                                            <i class="fa fa-user" style="width: 12px;"></i> Patient<br>
-                                            <i class="fa fa-calendar" style="width: 12px;"></i> This week
-                                        </p>
                                     </div>
                                 </div>
                                 <div class="step step-6"><span> 6</span>
                                     <div class="fa fa-check opaque"></div>
                                     <div class="step-label">
                                         Subsequent Pt Encounter<br>
-                                        <p class="spbSubHeading">
-                                            <i class="fa fa-user" style="width: 12px;"></i> Doctor<br>
-                                            <i class="fa fa-calendar" style="width: 12px;"></i> +30 days
-                                        </p>
                                     </div>
                                 </div>
 
@@ -659,17 +771,7 @@
                                     <p>The Gaps in Care report is a powerful tool that can result in better care outcomes, benefiting the payer (cost savings), the provider (time savings), and the
                                         patient
                                         (better health outcomes).</p>
-                                    <p>This scenario starts with a Population Health Manager employing the Care Gap Work List to monitor a patient population for gaps in care. They will identify
-                                        patients
-                                        with gaps related to the Colorectal Cancer Screening Quality Measure. Then they can easily manage these patients through the recommended CPG to gap closure.</p>
-                                    <p>During the patient visit, the Digital Quality Measures module requests a gaps in care report from the payer. The clinician is notified of the resulting gaps in
-                                        care
-                                        and
-                                        the Clinical Decision Support module provides the clinician with a recommendation for how to address the gap based on the American Cancer Society Guideline for
-                                        Colorectal Cancer Screening.</p>
-                                    <p>Once the recommended intervention has been completed, the Digital Quality Measure module submits the new "quality" data to the payer.</p>
-                                    <p>During a subsequent patient visit the Digital Quality Measure module requests a new gaps in care report from the payer, which then shows the gap has been closed.
-                                    </p>
+                                    <p><i>Click the tab on the right edge of the screen, near the bottom, for demo narration.</i></p>
                                     <input type="button" class="button" value="Start Care Gaps Demo" onclick="Logger.addTextLog('Care Gap Demo Started'); spbNext();">
                                 </div>
                             </section>
@@ -805,8 +907,40 @@
             </div> <!-- END: MockEMR -->
         </div>
 
+        <!-- Right-side panel. Includes story board and API monitor -->
         <div id="sidepanelRight" class="sidepanelContainer">
-            <div id="abcLogger" class="abcAPIContainer"></div>
+            <div class="abcCardContainer scene--card">
+                <div id="abcStoryCard" class="card">
+
+                    <!-- Front side of card -->
+                    <div class="cardFace cardFaceFront">
+                        <div id="abcActorContainer" class="abcActorContainer">
+                            <div style="display: flex; flex-flow: row nowrap;" class="abcActor">
+                                <div id="abcStoryProvider" class="regular provider"><i class="fa fa-stethoscope"></i> <span style="color: #000;">Provider</span></div>
+                                <div id="abcStoryPatient" class="regular patient"><i class="fa fa-user"></i> <span style="color: #000;">Patient</span></div>
+                                <div id="abcStoryAdmin" class="focus admin"><i class="fa-solid fa-hand-holding-medical"></i> <span style="color: #000;">Admin</span></div>
+                            </div>
+                            <div class="abcActor">
+                                <div class="storyMain" id="abcStoryMain">&nbsp;
+                                    <section id="abcStoryProviderMain" class="abcStorySection"></section>
+                                    <section id="abcStoryPatientMain" class="abcStorySection"></section>
+                                    <section id="abcStoryAdminMain" class="abcStorySection" style="display:block; opacity: 1"></section>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Back side of card -->
+                    <div class="cardFace cardFaceBack">
+                        <div id="abcLogger" class="abcAPIContainer"></div>
+                    </div>
+                </div>
+
+                <!-- Card flip button -->
+                <div class="flipButton" onclick="abcCardFlip('abcStoryCard')">
+                    <i class="fa fa-repeat"></i>
+                </div>
+            </div>
         </div>
 
         <div class="circle">
@@ -844,5 +978,4 @@
 
 <!-- TODO:
 1. Make RESET button (recycle icon) functional -- either refresh the page, or delete the resources and then refresh the page
-2. Make the sidepanel rotate between abcLogger and demoNarration
 -->
