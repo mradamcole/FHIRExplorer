@@ -22,7 +22,7 @@
     <!--  JSON Viewer  -->
     <link rel="stylesheet" type="text/css" href="assets/css/jquery.json-viewer.css" />
 
-    <!-- Stepped Progress Bar -->
+    <!-- Stepped Progress Bar (spb) -->
     <link rel="stylesheet" type="text/css" href="assets/css/steppedProgress.css" rel="stylesheet">
 
     <!-- Flip card -->
@@ -38,12 +38,25 @@
     <style>
         :root {
             --textRevealDuration: 3s;
+            --emrBackgroundColor: #8ac;
         }
 
         body {
             font-family: "Lato", sans-serif;
             margin: 0px;
             padding: 0px;
+        }
+
+        .abcButton {
+            padding: 3px;
+            border-radius: 3px;
+            background-color: #c6c9cc;
+        }
+
+        .abcButton:hover {
+            background-color: #1C2833;
+            color: #af0;
+            cursor: pointer;
         }
 
         /* .mockEMR = the mock EMR */
@@ -53,124 +66,124 @@
             height: 100vh;
             overflow: auto;
             box-sizing: border-box;
+        }
 
-            & pre,
-            & span,
-            & div {
-                /* Set width to 1 for debugging */
-                border: 0px solid #0f0;
-                box-sizing: border-box;
-            }
-
-
-            & .rowTitle {
-                min-height: 40px;
-                background: #8ac;
-                display: flex;
-                align-items: center;
-                filter: drop-shadow(0px 1px 2px #000);
-            }
+        .mockEMRContainer pre,
+        .mockEMRContainer span,
+        .mockEMRContainer div {
+            /* Set width to 1 for debugging */
+            border: 0px solid #0f0;
+            box-sizing: border-box;
+        }
 
 
-            & .rowTitle .alignRight {
-                margin-left: auto;
-                margin-right: 20px;
-                display: flex;
-                align-items: center;
-            }
+        .mockEMRContainer .rowTitle {
+            min-height: 40px;
+            background: var(--emrBackgroundColor);
+            display: flex;
+            align-items: center;
+            filter: drop-shadow(0px 1px 2px #000);
+        }
 
-            & .headingTitle {
-                font: oblique bold 24px arial;
-                color: #fff;
-                filter: drop-shadow(0px 0px 2px #000);
-            }
 
-            & .headingTitle2 {
-                font: bold 16px arial;
-                color: #fff;
-            }
+        .mockEMRContainer .rowTitle .alignRight {
+            margin-left: auto;
+            margin-right: 20px;
+            display: flex;
+            align-items: center;
+        }
 
-            & .rowBody {
-                flex: 1;
-                /* overflow-y: auto; */
-                overflow-y: hidden;
-                overflow-x: hidden;
-                margin: 5px 5px 0px 5px;
-            }
+        .mockEMRContainer .headingTitle {
+            font: oblique bold 24px arial;
+            color: #fff;
+            filter: drop-shadow(0px 0px 2px #000);
+        }
 
-            & .rowFooter {
-                font: 14px arial;
-                color: #fff;
-                background: #8ac;
-                filter: drop-shadow(0px 1px 2px #000);
-            }
+        .mockEMRContainer .headingTitle2 {
+            font: bold 16px arial;
+            color: #fff;
+        }
 
-            & .bodyRow {
-                width: 100%;
-                height: 100%;
-                background-color: #fff;
-            }
+        .mockEMRContainer .rowBody {
+            flex: 1;
+            /* overflow-y: auto; */
+            overflow-y: hidden;
+            overflow-x: hidden;
+            margin: 5px 5px 0px 5px;
+        }
 
-            & .bodyRow .emr {
-                width: 60%;
-                height: 100%;
-                background-color: #cef;
-            }
+        .mockEMRContainer .rowFooter {
+            font: 14px arial;
+            color: #fff;
+            background: var(--emrBackgroundColor);
+            filter: drop-shadow(0px 1px 2px #000);
+            padding-left: 6px;
+        }
 
-            & .bodyRow .abcAPIContainer {
-                flex: 1;
-                overflow: auto;
-                height: 100%;
-            }
+        .mockEMRContainer .rowFooter .popup {
+            color: #af0;
+        }
 
-            & .resetDemo {
-                color: rgba(0, 0, 0, 0.3);
-                cursor: pointer;
-            }
+        .mockEMRContainer .bodyRow {
+            width: 100%;
+            height: 100%;
+            background-color: #fff;
+        }
 
-            & .button {
-                background-color: #8ac;
-                border: none;
-                color: #fff;
-                font-weight: bold;
-                padding: 10px 20px;
-                text-align: center;
-                display: inline-block;
-                font-size: 16px;
-                border-radius: 5px;
-                border: 2px solid #ffffff00;
-            }
+        .mockEMRContainer .bodyRow .emr {
+            width: 60%;
+            height: 100%;
+            background-color: #cef;
+        }
 
-            & .button:hover {
-                color: #8ac;
-                background-color: #1c2833;
-                border: 2px solid #8ac;
-                filter: drop-shadow(0px 0px 2px #8ac);
-                cursor: pointer;
-            }
+        .mockEMRContainer .bodyRow .abcAPIContainer {
+            flex: 1;
+            overflow: auto;
+            height: 100%;
+        }
 
-            & .cgrRow:hover {
-                background-color: var(--rowHighlightColor);
-                cursor: pointer;
-            }
+        .mockEMRContainer .button {
+            background-color: var(--emrBackgroundColor);
+            border: none;
+            color: #fff;
+            font-weight: bold;
+            padding: 10px 20px;
+            text-align: center;
+            display: inline-block;
+            font-size: 16px;
+            border-radius: 5px;
+            border: 2px solid #ffffff00;
+        }
 
-            & .dsList li {
-                border: 1px solid #ccc;
-                background-color: #fff;
-                padding: 3px 10px;
-                margin: 2px;
-            }
+        .mockEMRContainer .button:hover {
+            color: var(--emrBackgroundColor);
+            background-color: #1c2833;
+            border: 2px solid var(--emrBackgroundColor);
+            filter: drop-shadow(0px 0px 2px var(--emrBackgroundColor));
+            cursor: pointer;
+        }
 
-            & .dsList li:hover {
-                border: 1px solid #444;
-                background-color: var(--rowHighlightColor);
-                cursor: pointer;
-            }
+        .mockEMRContainer .cgrRow:hover {
+            background-color: var(--rowHighlightColor);
+            cursor: pointer;
+        }
 
-            & .text-focus-in {
-                position: relative;
-                animation: text-focus-in var(--textRevealDuration) linear;
-            }
+        .mockEMRContainer .dsList li {
+            border: 1px solid #ccc;
+            background-color: #fff;
+            padding: 3px 10px;
+            margin: 2px;
+        }
+
+        .mockEMRContainer .dsList li:hover {
+            border: 1px solid #444;
+            background-color: var(--rowHighlightColor);
+            cursor: pointer;
+        }
+
+        .mockEMRContainer .text-focus-in {
+            position: relative;
+            animation: text-focus-in var(--textRevealDuration) linear;
         }
 
         @keyframes text-focus-in {
@@ -432,13 +445,13 @@
             switch (abcActorStage) {
                 case 0:
                     abcActorActor = "Admin"
-                    s = `<div class="abcStoryContent">
+                    s = `<div id="abcStoryContent" class="abcStoryContent ${abcActorActor}">
                         <p>Loading...</p>
                         </div>`;
                     break;
                 case 1:
                     abcActorActor = "Admin";
-                    s = `<div class="abcStoryContent">
+                    s = `<div id="abcStoryContent" class="abcStoryContent ${abcActorActor}">
                         <p><i>As we progress through this demo we'll change actors between the Provider, Patient, and the Office Administrator. We'll let you know who the current actor is right here.</i></p>
                         <p><i>Note: You can click the <i class="fa fa-repeat"></i> icon in the top-right to see the server interactions and learn how to integrate Care Gaps management
                         into your environment. We suggest you run through the demo once before viewing the server interactions.</i></p>
@@ -446,7 +459,7 @@
                     break;
                 case 2:
                     abcActorActor = "Admin";
-                    s = `<div class="abcStoryContent">
+                    s = `<div id="abcStoryContent" class="abcStoryContent ${abcActorActor}">
                         <p>This scenario starts with a Clinical Support Staff using the Smile Digital Quality Measure module, Care Gap Worklist feature to monitor a patient population for
                         gaps in care prospectively. They will identify patients at risk of open care gaps related to the Colorectal Cancer Screening Quality Measure. Then they can
                         easily schedule an appointment so the patient and clinician can discuss options for ensuring recommended treatment to prevent a gap in care.</p>
@@ -455,14 +468,14 @@
                     break;
                 case 3:
                     abcActorActor = "Provider";
-                    s = `<div class="abcStoryContent">
+                    s = `<div id="abcStoryContent" class="abcStoryContent ${abcActorActor}">
                         <p>During the patient visit, the Smile Digital Quality Measure module requests a Gaps in Care report. The clinician (provider) is notified of the resulting risks for gaps in care.</p>
                         <p><i>Within your EMR, Select <b>Colorectal Cancer ScreeningFHIR</b> to start the process of closing it.</i></p>
                         </div>`;
                     break;
                 case 4:
                     abcActorActor = "Provider";
-                    s = `<div class="abcStoryContent">
+                    s = `<div id="abcStoryContent" class="abcStoryContent ${abcActorActor}">
                         <p>The Smile Clinical Decision Support module provides the clinician with treatment recommendations based on the evidence-based American Cancer Society’s Guidelines for Colorectal
                             Cancer Screening to avoid a gap in care.</p>
                         <p><i>You can go with the recommended procedure/test and/or select a different one.</i></p>
@@ -470,13 +483,13 @@
                     break;
                 case 5:
                     abcActorActor = "Patient";
-                    s = `<div class="abcStoryContent">
+                    s = `<div id="abcStoryContent" class="abcStoryContent ${abcActorActor}">
                         <p>Once the recommended intervention has been completed, the data relative to the Colorectal Cancer Screening Quality Measure is submitted to the Smile Digital Quality Measure server.</p>
                     </div>`;
                     break;
                 case 6:
                     abcActorActor = "Provider";
-                    s = `<div class="abcStoryContent">
+                    s = `<div id="abcStoryContent" class="abcStoryContent ${abcActorActor}">
                         <p>During a subsequent patient visit, the Smile Digital Quality Measure module requests a new Gaps in Care report, which then shows that the patient has received treatment that meets the
                             Colorectal Cancer Screening Quality Measure requirements.  The care gap risk has been proactively mitigated.</p>
                         <p><i>To reset the data on the server and restart the demo, click the <i class="fa fa-recycle resetDemo"></i> icon in the title at top left.</i></p>
@@ -493,16 +506,17 @@
             const actorOld = document.getElementsByClassName("focus")[0];
             const sectionOld = document.getElementById(actorOld.id + "Main");
             const sectionNew = document.getElementById(actorNew.id + "Main");
+            const fade = getComputedStyle(document.documentElement).getPropertyValue("--abcStoryActorFadedOpacity");
             addTransition(actorOld, { //background tab
                 flex: 2,
-                opacity: .5,
-                "margin-top": "2px",
+                opacity: fade,
+                // "margin-top": "2px", //enable when we use rounded tabs
             }, 1000);
             addTransition(actorNew, {   //foreground tab
                 flex: 5,
                 opacity: 1,
-                "border-bottom": "1px solid #e94;",
-                "margin-top": "-2px",
+                // "border-bottom": "1px solid #e94;",  //enable when we use rounded tabs
+                // "margin-top": "-2px",                //enable when we use rounded tabs
             }, 1000);
             await addTransition(sectionOld, {   //story content to fade out
                 opacity: 0,
@@ -522,6 +536,39 @@
                 actorOld.classList.add("regular");
                 actorOld.classList.remove("focus");
             }
+            // Change the EMR Background Color to match the current Actor's color
+            const sty = getComputedStyle(document.documentElement).getPropertyValue("--abcStoryActor" + actorNew.id.substring(8));
+            updateStyleRule(":root", "--emrBackgroundColor", sty);
+        }
+
+        //Toggle open/close the sidePanel
+        toggleSidepanel = () => {
+            let expanded = document.getElementById("sidepanelOutside").getAttribute("expanded");
+            if (expanded === "false") expanded = false; // "false" != false
+            let expandedWidth = getComputedStyle(document.querySelector(":root")).getPropertyValue("--sidepanelExpandedWidth");
+            var fromSize, toSize;
+            if (expanded) {
+                fromSize = expandedWidth;
+                toSize = 0;
+                document.getElementById("sidepanelOutside").setAttribute("expanded", "false");
+            } else {
+                fromSize = 0;
+                toSize = expandedWidth;
+                document.getElementById("sidepanelOutside").setAttribute("expanded", "true");
+            }
+            sidepanelResize(fromSize, toSize, 20);
+            let circleLeft = (expanded) ? -6 : 5;
+            $('.circle').animate({
+                "margin-left": circleLeft
+            }, function () {
+                $('.fa-chevron-left').toggleClass('hide');
+                $('.fa-chevron-right').toggleClass('hide');
+            });
+        }
+
+        //Reset the demo: Reset data on the server, and reload the page
+        careGapsResetDemo = () => {
+            alert("add function to reset the demo");
         }
 
 
@@ -655,7 +702,27 @@
             }
         }
 
-        //Page loaded functions
+        //Add a popup (mouseover) event, and the corresponding mouseout
+        abcAddPopup = (elName, msg) => {
+            const elID = document.getElementById(elName);
+            elID.addEventListener("mouseover", () => { abcFooterMsg(msg) });
+            elID.addEventListener("mouseout", () => { abcFooterMsg("") });
+        }
+
+        //Update the message in the footer. If cls is not specified, the popup class will be used.
+        abcFooterMsg = (msg, cls) => {
+            const ftr = document.getElementById("mockEMRFooter");
+            if (msg) {  //Store the current footer message (to replace the popup msg)
+                dataParams.footerMsg = ftr.innerHTML;
+                cls = cls ? cls : "popup";
+                msg = `<span class="${cls}">${msg}</span>`;
+            } else {
+                msg = dataParams.footerMsg;
+            }
+            ftr.innerHTML = msg;
+        }
+
+        //Page-loaded functions
         window.addEventListener('load', function () {
             Logger = new abcLogger();
             Logger.addTextLog("<img src='assets/img/sdh200.png' height=24 style='vertical-align: middle;'>&nbsp;&nbsp; API Monitor", "heading1", false);
@@ -663,27 +730,7 @@
             changeServer();
 
             $('.circle').click(function () {
-                let expanded = document.getElementById("sidepanelOutside").getAttribute("expanded");
-                if (expanded === "false") expanded = false; // "false" != false
-                let expandedWidth = getComputedStyle(document.querySelector(":root")).getPropertyValue("--sidepanelExpandedWidth");
-                var fromSize, toSize;
-                if (expanded) {
-                    fromSize = expandedWidth;
-                    toSize = 0;
-                    document.getElementById("sidepanelOutside").setAttribute("expanded", "false");
-                } else {
-                    fromSize = 0;
-                    toSize = expandedWidth;
-                    document.getElementById("sidepanelOutside").setAttribute("expanded", "true");
-                }
-                sidepanelResize(fromSize, toSize, 20);
-                let circleLeft = (expanded) ? -6 : 5;
-                $('.circle').animate({
-                    "margin-left": circleLeft
-                }, function () {
-                    $('.fa-chevron-left').toggleClass('hide');
-                    $('.fa-chevron-right').toggleClass('hide');
-                });
+                toggleSidepanel();
             });
             winResizeEvent();
 
@@ -691,6 +738,16 @@
             dqmPtList2_render();    //Follow-up visit
 
             abcActorNext();     //Set the abcActor to the first story board
+
+            setTimeout(() => {  //Open the sidePanel by default when the page is loaded
+                toggleSidepanel();
+            }, 1500);
+
+            //Add popup alerts
+            abcAddPopup("careGapsResetDemoButton", "Reset the Care Gaps demo");
+            abcAddPopup("flipCareButton", "Toggle between Demo Narration and API Monitor");
+            abcAddPopup("toggleSidePanelButton", "Toggle side panel visibility");
+
         });
 
         window.addEventListener('resize', function () {
@@ -709,7 +766,8 @@
                 <!-- MockEMR Heading row -->
                 <div class="rowTitle">
                     <span class="headingTitle2" style="margin-left: 10px;">
-                        </i> Demo <i class="fa fa-arrow-circle-right"></i> Clinical Reasoning <i class="fa fa-arrow-circle-right"></i> Care Gaps <i class="fa fa-recycle resetDemo"></i>
+                        </i> Demo <i class="fa fa-arrow-circle-right"></i> Clinical Reasoning <i class="fa fa-arrow-circle-right"></i> Care Gaps <i id="careGapsResetDemoButton"
+                            class="fa fa-recycle abcButton" onclick="careGapsResetDemo()"></i>
                     </span>
                     <span class="alignRight">
                         <span class="headingTitle">&nbsp;&nbsp;&nbsp;Mock EMR&nbsp;&nbsp;&nbsp;</span>
@@ -771,7 +829,7 @@
                                     <p>The Gaps in Care report is a powerful tool that can result in better care outcomes, benefiting the payer (cost savings), the provider (time savings), and the
                                         patient
                                         (better health outcomes).</p>
-                                    <p><i>Click the tab on the right edge of the screen, near the bottom, for demo narration.</i></p>
+                                    <!-- <p><i>Click the tab on the right edge of the screen, near the bottom, to toggle demo narration.</i></p> -->
                                     <input type="button" class="button" value="Start Care Gaps Demo" onclick="Logger.addTextLog('Care Gap Demo Started'); spbNext();">
                                 </div>
                             </section>
@@ -790,11 +848,11 @@
                                             columns: [ //Define Table Columns
                                                 { title: "detectedIssueID", field: "detectedIssueID", hozAlign: "left", visible: false },
                                                 { title: "ptID", field: "ptID", hozAlign: "left", visible: false },
-                                                { title: "Patient", field: "ptNameLF", hozAlign: "left", minWidth: 300, headerSort: false },
+                                                { title: "Patient", field: "ptNameLF", hozAlign: "left", minWidth: 250, headerSort: false },
                                                 { title: "Care Gap", field: "careGapName", hozAlign: "left", minWidth: 300, headerSort: false },
                                                 { title: "Status", field: "careGapStatusValue", hozAlign: "left", minWidth: 80, headerSort: false },
                                                 { title: "Days open", field: "measureReportAging", hozAlign: "left", minWidth: 80, headerSort: false },
-                                                { title: "Next Appointment", field: "nextAppointment", sorter: "date", hozAlign: "left", minWidth: 200, headerSort: false, formatter: "html" },
+                                                { title: "Next Appointment", field: "nextAppointment", sorter: "date", hozAlign: "left", minWidth: 120, headerSort: false, formatter: "html" },
                                             ],
                                         });
 
@@ -865,24 +923,27 @@
                             </section>
 
                             <section id="spbSection6" class="spbSection6" style="display:none; text-align: center;">
-                                <div id="dqmPtList2" style="margin: 20px; text-align: center; font-size: 18px; color: #d0d0d0; font-weight:bold;">Retrieving Care Gaps...</div>
+                                <img src="assets/img/ehr-ghost.png" style="width: 100%; max-width: 2000px; filter: blur(2px) contrast(75%) brightness(120%);">
+                                <div style="border: 3px solid #000; background-color: #ffffffe0; width: 90%; height: 200px; position: absolute; top: 100px; margin-left: 5%;">
+                                    <div id="dqmPtList2" style="margin: 20px; text-align: center; font-size: 18px; color: #d0d0d0; font-weight:bold;">Retrieving Care Gaps...</div>
+                                </div>
                                 <script>
                                     var dqmPtList2;
                                     dqmPtList2_render = () => {
                                         dqmPtList2 = new Tabulator("#dqmPtList2", {
                                             data: dqmPtListData, //assign data to table
-                                            height: 305, // set height of table (in CSS or here), this enables the Virtual DOM and improves render speed dramatically (can be any valid css height value)
+                                            height: 150, // set height of table (in CSS or here), this enables the Virtual DOM and improves render speed dramatically (can be any valid css height value)
                                             layout: "fitColumns", //fit columns to width of table (optional)
                                             index: "detectedIssueID", //set the index field (~=PK) to what should be a guaranteed unique value
                                             placeholder: 'Retrieving Open Care Gaps List<br><img src="assets/img/spinner3.gif" height="40">',
                                             columns: [ //Define Table Columns
                                                 { title: "detectedIssueID", field: "detectedIssueID", hozAlign: "left", visible: false },
                                                 { title: "ptID", field: "ptID", hozAlign: "left", visible: false },
-                                                { title: "Patient", field: "ptNameLF", hozAlign: "left", minWidth: 300, headerSort: false },
+                                                { title: "Patient", field: "ptNameLF", hozAlign: "left", minWidth: 200, headerSort: false },
                                                 { title: "Care Gap", field: "careGapName", hozAlign: "left", minWidth: 300, headerSort: false },
-                                                { title: "Status", field: "careGapStatusValue", hozAlign: "left", minWidth: 80, headerSort: false },
-                                                { title: "Days open", field: "measureReportAging", hozAlign: "left", minWidth: 80, headerSort: false },
-                                                { title: "Next Appointment", field: "nextAppointment", sorter: "date", hozAlign: "left", minWidth: 200, headerSort: false, formatter: "html" },
+                                                // { title: "Status", field: "careGapStatusValue", hozAlign: "left", minWidth: 80, headerSort: false },
+                                                // { title: "Days open", field: "measureReportAging", hozAlign: "left", minWidth: 80, headerSort: false },
+                                                { title: "Status", field: "nextAppointment", sorter: "date", hozAlign: "left", minWidth: 200, headerSort: false, formatter: "html" },
                                             ],
                                         });
 
@@ -903,7 +964,7 @@
                 </div>
 
                 <!-- MockEMR Footer row -->
-                <div id="mockEMRFooter" class="rowFooter">&nbsp;Care Gaps Demo v1.0.6</div>
+                <div id="mockEMRFooter" class="rowFooter">Care Gaps Demo v1.1.0</div>
             </div> <!-- END: MockEMR -->
         </div>
 
@@ -938,12 +999,12 @@
 
                 <!-- Card flip button -->
                 <div class="flipButton" onclick="abcCardFlip('abcStoryCard')">
-                    <i class="fa fa-repeat"></i>
+                    <i id="flipCareButton" class="fa fa-repeat"></i>
                 </div>
             </div>
         </div>
 
-        <div class="circle">
+        <div id="toggleSidePanelButton" class="circle">
             <i class="fa fa-chevron-left" aria-hidden="true"></i>
             <i class="fa fa-chevron-right hide" aria-hidden="true"></i>
         </div>
@@ -978,4 +1039,16 @@
 
 <!-- TODO:
 1. Make RESET button (recycle icon) functional -- either refresh the page, or delete the resources and then refresh the page
+3. Make it prospective: "Days open" ==> "Days until gap [occurs]" (10yrs from last colorectal, 2yrs since fecal DNA, 50th b-day,...)
+    call $care-gap...<12/30 - 12/31>      this will get all the gaps that will be open EOY (prospectively)
+4. b/w (2) and (3) add mock scheduler in the EMR
+5. Next appt is empty until it has been scheduled
+7. (5) redo this screen. Show a workflow (BPM or SVG, follow the bouncing ball)
+8. (6) show EMR in the background
+9. $care-gap has disappeared from the API list
+10. (3) remove the recently closed care gaps section. Add this on (6)
+Done 2. Change the style of the tabs so they don't look clickable
+DONE 11 . Start demo with narrative visible
+Rob: 6. "clinical factors" ==> "rationale". (Clean up formatting of DSS)
+
 -->
