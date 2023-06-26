@@ -38,7 +38,6 @@
     <link rel='stylesheet' type="text/css" href='assets/css/fc-core-main.css'>
     <link rel='stylesheet' type="text/css" href='assets/css/fc-timegrid-main.css'>
 
-
     <style>
         :root {
             --textRevealDuration: 3s;
@@ -876,9 +875,15 @@
                                             ],
                                         });
 
-                                        //Render the calendar only once the care gaps grid is populated
-                                        dqmPtList.on("dataChanged", function (data) {
+                                        //Render the calendar only once the care gaps grid is populated.
+                                        //Populate a temp table with all the table details so that the calendar onClick event can use these details to pass to the next stage
+                                        dataParams.tempGrid = [];
+                                        dqmPtList.on("rowUpdated", function (row) {
+                                            //The other dataLoading/Processing events don't trigger as expected; they trigger only the first time the table is constructed.
+                                            //  Unfortunately this event triggers repeatedly; not great for production but good enough for a demo
                                             abcCalendar.render();
+                                            dataParams.tempGrid[dataParams.tempGrid.length] = row.getData();
+                                            console.log("temp >", dataParams.tempGrid)
                                         });
                                     }
                                 </script>
@@ -944,18 +949,19 @@
                                                 { id: 'bg1', resourceId: 'a', rendering: 'background', start: moment().subtract(1, 'd').format('YYYY-MM-DD'), end: moment().add(2, 'd').format('YYYY-MM-DD'), color: '#808080' },
                                                 { id: '1', resourceId: 'a', start: moment().subtract(1, 'd').format('YYYY-MM-DD'), end: moment().add(2, 'd').format('YYYY-MM-DD'), title: 'Vacation', backgroundColor: '#808080' },
                                             ],
+                                            
                                             // calendar event clicked; advance to the next page
                                             eventClick: function (info) {
                                                 info.el.style.borderColor = 'red';
-
-                                                console.log(info.event.title)
-                                                alert(info.event.title)
-                                                // 1. in dqmPtList, store the grid data in a temporary JSON object, e.g. dataParams.tempGrid
-                                                // 2. When the event is clicked in the calendar (i.e. this function), match the patient name (info.event.title)
-                                                //      to the appropriate row in dataParams.tempGrid
-                                                // 3. set dataParams.curCareGap = <the row from #2>
-                                                // 4. Logger.addTextLog("Care Gap ID: " + row.getData().detectedIssueID + " selected");
-                                                // 5. spbNext();
+                                                // Get the patient details from the temp table (dataParams.tempGrid)
+                                                for (var i=0; i<dataParams.tempGrid.length; i++) {
+                                                    if (dataParams.tempGrid[i].ptNameLF == info.event.title) {
+                                                        dataParams.curCareGap = dataParams.tempGrid[i];
+                                                        break;
+                                                    }
+                                                }
+                                                Logger.addTextLog("Care Gap ID: " + dataParams.curCareGap.detectedIssueID + " selected");
+                                                spbNext();
                                             }
                                         });
 
@@ -1073,7 +1079,7 @@
                 </div>
 
                 <!-- MockEMR Footer row -->
-                <div id="mockEMRFooter" class="rowFooter">Care Gaps Demo v1.1.2</div>
+                <div id="mockEMRFooter" class="rowFooter">Care Gaps Demo v1.1.3</div>
             </div> <!-- END: MockEMR -->
         </div>
 
@@ -1165,14 +1171,14 @@
 1. Make RESET button (recycle icon) functional -- either refresh the page, or delete the resources and then refresh the page
 3. Make it prospective: "Days open" ==> "Days until gap [occurs]" (10yrs from last colorectal, 2yrs since fecal DNA, 50th b-day,...)
     call $care-gap...<12/30 - 12/31>      this will get all the gaps that will be open EOY (prospectively)
-4. b/w (2) and (3) add mock scheduler in the EMR
 5. Next appt is empty until it has been scheduled
 7. (5) redo this screen. Show a workflow (BPM or SVG, follow the bouncing ball)
 8. (6) show EMR in the background
 9. $care-gap has disappeared from the API list
 10. (3) remove the recently closed care gaps section. Add this on (6)
-Done 2. Change the style of the tabs so they don't look clickable
+DONE 2. Change the style of the tabs so they don't look clickable
 DONE 11 . Start demo with narrative visible
 Rob: 6. "clinical factors" ==> "rationale". (Clean up formatting of DSS)
+DONE 4. b/w (2) and (3) add mock scheduler in the EMR
 
 -->
