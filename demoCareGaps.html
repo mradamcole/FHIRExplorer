@@ -10,30 +10,34 @@
     <link rel="icon" type="image/png" sizes="16x16" href="assets/favicon/favicon-16x16.png">
 
     <!--  Fonts and icons -->
-    <!-- <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/font-awesome/latest/css/font-awesome.min.css" rel="stylesheet"> -->
+    <!-- <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/font-awesome/latest/css/font-awesome.min.css"> -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Material+Icons" />
-    <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Material+Icons">
+    <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/icon?family=Material+Icons">
 
     <!--  Logger  -->
-    <link rel="stylesheet" type="text/css" href="assets/css/logger.css" />
-    <link rel="stylesheet" type="text/css" href="assets/css/sidepanelSplit.css" />
+    <link rel="stylesheet" type="text/css" href="assets/css/logger.css">
+    <link rel="stylesheet" type="text/css" href="assets/css/sidepanelSplit.css">
 
     <!--  JSON Viewer  -->
-    <link rel="stylesheet" type="text/css" href="assets/css/jquery.json-viewer.css" />
+    <link rel="stylesheet" type="text/css" href="assets/css/jquery.json-viewer.css">
 
     <!-- Stepped Progress Bar (spb) -->
-    <link rel="stylesheet" type="text/css" href="assets/css/steppedProgress.css" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="assets/css/steppedProgress.css">
 
     <!-- Flip card -->
-    <link rel="stylesheet" type="text/css" href="assets/css/flipcard.css" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="assets/css/flipcard.css">
 
     <!-- Resizing tabs -->
-    <link rel="stylesheet" type="text/css" href="assets/css/resizingTabs.css" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="assets/css/resizingTabs.css">
 
-    <!-- CSS: Tabulator (fhirGrid) -->
-    <!-- <link href="https://unpkg.com/tabulator-tables/dist/css/tabulator.min.css" rel="stylesheet"> -->
-    <link href="assets/css/tabulator_modern.css" rel="stylesheet">
+    <!-- Tabulator (fhirGrid) -->
+    <link rel='stylesheet' type="text/css" href="https://unpkg.com/tabulator-tables/dist/css/tabulator_modern.min.css">
+
+    <!--  Fullcalendar (scheduling)  -->
+    <link rel='stylesheet' type="text/css" href='assets/css/fc-core-main.css'>
+    <link rel='stylesheet' type="text/css" href='assets/css/fc-timegrid-main.css'>
+
 
     <style>
         :root {
@@ -184,6 +188,13 @@
         .mockEMRContainer .text-focus-in {
             position: relative;
             animation: text-focus-in var(--textRevealDuration) linear;
+        }
+
+        /* fullCalendar draggable element; placed inside Tabulator */
+        .fcDraggableEvent {
+            background-color: #f9f9f9;
+            cursor: move;
+            border-radius: 5px;
         }
 
         @keyframes text-focus-in {
@@ -463,7 +474,10 @@
                         <p>This scenario starts with a Clinical Support Staff using the Smile Digital Quality Measure module, Care Gap Worklist feature to monitor a patient population for
                         gaps in care prospectively. They will identify patients at risk of open care gaps related to the Colorectal Cancer Screening Quality Measure. Then they can
                         easily schedule an appointment so the patient and clinician can discuss options for ensuring recommended treatment to prevent a gap in care.</p>
-                        <p><i>You are now playing the role of an office <b>Admin</b>istrator. Select the patient at left to begin closing their open care gap.</i></p>
+                        <p><i>You are now playing the role of an office <b>Admin</b>istrator.</i></p>
+                            <ol><li>Drag a patient(s) at left to the calendar.
+                                <li>Click on an appointment in the calendar to jump to that Patient-Provider encounter.
+                            </ol>
                     </div>`;
                     break;
                 case 3:
@@ -834,21 +848,27 @@
                                 </div>
                             </section>
 
-                            <section id="spbSection2" class="spbSection2" style="display:none;">
+                            <section id="spbSection2" class="spbSection2" style="display:none; position: relative; top: -60px;">
+                                <!-- Grid of patients with open care gaps -->
                                 <div id="dqmPtList" style="margin: 20px; text-align: center; font-size: 18px; color: #d0d0d0; font-weight:bold;">Retrieving Care Gaps...</div>
                                 <script>
                                     var dqmPtList;
                                     dqmPtList_render = () => {
                                         dqmPtList = new Tabulator("#dqmPtList", {
                                             data: dqmPtListData, //assign data to table
-                                            height: 305, // set height of table (in CSS or here), this enables the Virtual DOM and improves render speed dramatically (can be any valid css height value)
+                                            height: 250, // set height of table (in CSS or here), this enables the Virtual DOM and improves render speed dramatically (can be any valid css height value)
                                             layout: "fitColumns", //fit columns to width of table (optional)
                                             index: "detectedIssueID", //set the index field (~=PK) to what should be a guaranteed unique value
                                             placeholder: 'Retrieving Open Care Gaps List<br><img src="assets/img/spinner3.gif" height="40">',
                                             columns: [ //Define Table Columns
                                                 { title: "detectedIssueID", field: "detectedIssueID", hozAlign: "left", visible: false },
                                                 { title: "ptID", field: "ptID", hozAlign: "left", visible: false },
-                                                { title: "Patient", field: "ptNameLF", hozAlign: "left", minWidth: 250, headerSort: false },
+                                                {   //fcDraggableEvent is converted into an element which can be dragged onto the calendar
+                                                    title: "Patient", field: "ptNameLF", hozAlign: "left", minWidth: 250, headerSort: false, formatter: function (cell, formatterParams) {
+                                                        var value = cell.getValue();
+                                                        return "<span class='fcDraggableEvent'>" + value + "</span>";
+                                                    }
+                                                },
                                                 { title: "Care Gap", field: "careGapName", hozAlign: "left", minWidth: 300, headerSort: false },
                                                 { title: "Status", field: "careGapStatusValue", hozAlign: "left", minWidth: 80, headerSort: false },
                                                 { title: "Days open", field: "measureReportAging", hozAlign: "left", minWidth: 80, headerSort: false },
@@ -856,13 +876,102 @@
                                             ],
                                         });
 
-                                        //trigger an alert message when the row is clicked
-                                        dqmPtList.on("rowClick", function (e, row) {
-                                            dataParams.curCareGap = row.getData();
-                                            spbNext();
-                                            Logger.addTextLog("Care Gap ID: " + row.getData().detectedIssueID + " selected");
+                                        //Render the calendar only once the care gaps grid is populated
+                                        dqmPtList.on("dataChanged", function (data) {
+                                            abcCalendar.render();
                                         });
                                     }
+                                </script>
+
+                                <!-- Calendar for scheduling patients -->
+                                <div id='dqmCalendar' style="width: 96%; left:2%; position: relative;"></div>
+                                <script>
+                                    let abcCalendar;    //globally scoped so that it can be rendered within the dqmPtList
+                                    document.addEventListener('DOMContentLoaded', function () {
+                                        abcCalendar = new FullCalendar.Calendar(document.getElementById('dqmCalendar'), {
+                                            schedulerLicenseKey: 'GPL-My-Project-Is-Open-Source',
+                                            plugins: ['interaction', 'resourceDayGrid', 'resourceTimeGrid'],
+                                            droppable: true,
+                                            defaultView: 'resourceTimeGridDay',
+                                            defaultDate: moment().format('YYYY-MM-DD'),
+                                            editable: true,
+                                            selectable: true,
+                                            eventLimit: true, // allow "more" link when too many events
+                                            weekends: true,
+                                            nowIndicator: true,
+                                            height: document.getElementById('mockEMRFooter').getBoundingClientRect().top - 401,
+                                            // slotDuration: '00:10:00',
+                                            header: {
+                                                left: 'prev,next today',
+                                                center: 'title',
+                                                right: 'resourceTimeGridDay,resourceTimeGridTwoDay,timeGridWeek,dayGridMonth'
+                                            },
+                                            views: {
+                                                resourceTimeGridTwoDay: {
+                                                    type: 'resourceTimeGrid',
+                                                    duration: { days: 2 },
+                                                    buttonText: '2 days',
+                                                }
+                                            },
+                                            // Doctors and their business hours
+                                            allDaySlot: true,
+                                            businessHours: [
+                                                {
+                                                    daysOfWeek: [1, 2, 3, 4, 5],
+                                                    startTime: '08:00',
+                                                    endTime: '17:00',
+                                                },
+                                                {
+                                                    daysOfWeek: [0, 6],
+                                                    startTime: '08:00',
+                                                    endTime: '13:00',
+                                                },
+                                            ],
+                                            resources: [
+                                                { id: 'a', title: 'Dr. P. Adams' },
+                                                { id: 'b', title: 'Dr. N. Bethune', eventColor: '#0020ff' },
+                                                { id: 'c', title: 'Dr. M. Chung', eventColor: 'orange' },
+                                                {
+                                                    id: 'd', title: 'Dr. R. Drew', eventColor: 'lime',
+                                                    businessHours: {
+                                                        startTime: '12:30',
+                                                        endTime: '20:00'
+                                                    }
+                                                }
+                                            ],
+                                            // Vacation for Patch Adams
+                                            events: [
+                                                { id: 'bg1', resourceId: 'a', rendering: 'background', start: moment().subtract(1, 'd').format('YYYY-MM-DD'), end: moment().add(2, 'd').format('YYYY-MM-DD'), color: '#808080' },
+                                                { id: '1', resourceId: 'a', start: moment().subtract(1, 'd').format('YYYY-MM-DD'), end: moment().add(2, 'd').format('YYYY-MM-DD'), title: 'Vacation', backgroundColor: '#808080' },
+                                            ],
+                                            // calendar event clicked; advance to the next page
+                                            eventClick: function (info) {
+                                                info.el.style.borderColor = 'red';
+
+                                                console.log(info.event.title)
+                                                alert(info.event.title)
+                                                // 1. in dqmPtList, store the grid data in a temporary JSON object, e.g. dataParams.tempGrid
+                                                // 2. When the event is clicked in the calendar (i.e. this function), match the patient name (info.event.title)
+                                                //      to the appropriate row in dataParams.tempGrid
+                                                // 3. set dataParams.curCareGap = <the row from #2>
+                                                // 4. Logger.addTextLog("Care Gap ID: " + row.getData().detectedIssueID + " selected");
+                                                // 5. spbNext();
+                                            }
+                                        });
+
+                                        //make names in the Tabulator grid draggable
+                                        var Draggable = FullCalendarInteraction.Draggable;
+                                        var containerEl = document.getElementById('dqmPtList');
+                                        new Draggable(containerEl, {
+                                            itemSelector: '.fcDraggableEvent',
+                                            eventData: function (eventEl) {
+                                                return {
+                                                    title: eventEl.innerText
+                                                };
+                                            }
+                                        });
+
+                                    });
                                 </script>
                             </section>
 
@@ -964,7 +1073,7 @@
                 </div>
 
                 <!-- MockEMR Footer row -->
-                <div id="mockEMRFooter" class="rowFooter">Care Gaps Demo v1.1.0</div>
+                <div id="mockEMRFooter" class="rowFooter">Care Gaps Demo v1.1.2</div>
             </div> <!-- END: MockEMR -->
         </div>
 
@@ -1014,16 +1123,16 @@
 
 
 <!--   Core JS Files   -->
-<script src="https://code.jquery.com/jquery-3.6.1.min.js" integrity="sha256-o88AwQnZB+VDvE9tvIXrMQaPlFFSUTR+nldQm1LuPXQ=" crossorigin="anonymous"></script>
+<script type="text/javascript" src="https://code.jquery.com/jquery-3.6.1.min.js" integrity="sha256-o88AwQnZB+VDvE9tvIXrMQaPlFFSUTR+nldQm1LuPXQ=" crossorigin="anonymous"></script>
 
 <!--  Logger  -->
-<script src="assets/js/logger.js"></script>
+<script type="text/javascript" src="assets/js/logger.js"></script>
 
 <!--  JSON Viewer  -->
-<script src="assets/js/jquery.json-viewer.js"></script>
+<script type="text/javascript" src="assets/js/jquery.json-viewer.js"></script>
 
 <!--  Stepped Progress Bar  -->
-<script src="assets/js/steppedProgress.js"></script>
+<script type="text/javascript" src="assets/js/steppedProgress.js"></script>
 
 <!-- Tabulator (fhirGrid) -->
 <script type="text/javascript" src="https://unpkg.com/tabulator-tables/dist/js/tabulator.min.js"></script>
@@ -1034,6 +1143,21 @@
 <!-- FHIRPath (dependency of fhirGrid)-->
 <!-- <script src="assets/js/fhirpath.min.js"></script>
 <script src="assets/js/fhirpath.r4.min.js"></script> -->
+
+<!-- fullCalendar -->
+<script type="text/javascript" src='assets/js/fc-core-main.js'></script>
+<script type="text/javascript" src='assets/js/fc-daygrid-main.js'></script>
+<script type="text/javascript" src='assets/js/fc-interaction-main.js'></script>
+<script type="text/javascript" src='assets/js/fc-timegrid-main.js'></script>
+<script type="text/javascript" src='assets/js/fc-premium-common-main.js'></script>
+<script type="text/javascript" src='assets/js/fc-premium-daygrid-main.js'></script>
+<script type="text/javascript" src='assets/js/fc-premium-timegrid-main.js'></script>
+
+<!-- Mock data (used in full schedule) -->
+<script type="text/javascript" src='assets/js/mocker.js'></script>
+
+<!-- Moment (used in full schedule) -->
+<script type="text/javascript" src='assets/js/moment.min.js'></script>
 
 </html>
 
