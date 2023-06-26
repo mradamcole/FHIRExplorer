@@ -1001,16 +1001,6 @@
                                             <td><span id="cgrCareGap"></span></td>
                                             <td><span id="cgrDaysOpen"></span></td>
                                         </tr>
-                                        <tr>
-                                            <td colspan="2">&nbsp;</td>
-                                        </tr>
-                                        <tr>
-                                            <td colspan="2" style="background-color: #8ac; border-top: 1px solid #2c3e50; color: #fff;">Recently Closed Care Gaps (last 90 days)</td>
-                                        </tr>
-                                        <tr>
-                                            <td style="background-color: #79CEF2;">Care Gap</td>
-                                            <td style="background-color: #79CEF2;">Closed days</td>
-                                        </tr>
                                     </table>
                                 </div>
                             </section>
@@ -1039,7 +1029,8 @@
 
                             <section id="spbSection6" class="spbSection6" style="display:none; text-align: center;">
                                 <img src="assets/img/ehr-ghost.png" style="width: 100%; max-width: 2000px; filter: blur(2px) contrast(75%) brightness(120%);">
-                                <div style="border: 3px solid #000; background-color: #ffffffe0; width: 90%; height: 200px; position: absolute; top: 100px; margin-left: 5%;">
+                                <div style="border: 3px solid #000; background-color: #ffffffe0; width: 84%; height: 300px; position: absolute; top: 100px; margin-left: 8%;">
+                                    <div style="margin: 20px; text-align: center; font-size: 18px; color: #2C3E50; font-weight:bold;">Recently closed gaps</div>
                                     <div id="dqmPtList2" style="margin: 20px; text-align: center; font-size: 18px; color: #d0d0d0; font-weight:bold;">Retrieving Care Gaps...</div>
                                 </div>
                                 <script>
@@ -1079,7 +1070,7 @@
                 </div>
 
                 <!-- MockEMR Footer row -->
-                <div id="mockEMRFooter" class="rowFooter">Care Gaps Demo v1.1.3</div>
+                <div id="mockEMRFooter" class="rowFooter">Care Gaps Demo v1.1.4</div>
             </div> <!-- END: MockEMR -->
         </div>
 
@@ -1173,12 +1164,11 @@
     call $care-gap...<12/30 - 12/31>      this will get all the gaps that will be open EOY (prospectively)
 5. Next appt is empty until it has been scheduled
 7. (5) redo this screen. Show a workflow (BPM or SVG, follow the bouncing ball)
-8. (6) show EMR in the background
 9. $care-gap has disappeared from the API list
-10. (3) remove the recently closed care gaps section. Add this on (6)
 DONE 2. Change the style of the tabs so they don't look clickable
 DONE 11 . Start demo with narrative visible
 Rob: 6. "clinical factors" ==> "rationale". (Clean up formatting of DSS)
 DONE 4. b/w (2) and (3) add mock scheduler in the EMR
-
+DONE 8. (6) show EMR in the background
+DONE 10. (3) remove the recently closed care gaps section. Add this on (6)
 -->
