@@ -7,6 +7,26 @@
     --backgroundOrange: linear-gradient(to bottom, #fceabb 0%, #fccd4d 50%, #f8b500 51%, #fbdf93 100%);
     --backgroundGreen: linear-gradient(to bottom, #bfd255 0%, #8eb92a 50%, #72aa00 51%, #9ecb2d 100%);
     --backgroundLime: linear-gradient(to bottom, #e6f0a3 0%, #d2e638 50%, #c3d825 51%, #dbf043 100%);
+    --verbGET: #0F6AB4;
+    --verbPOST: #10A54A;
+    --verbPUT: #C5862B;
+    --verbDELETE: #A41E22;
+}
+
+.verbGET {
+    background-color: var(--verbGET);
+}
+
+.verbPOST {
+    background-color: var(--verbPOST);
+}
+
+.verbPUT {
+    background-color: var(--verbPUT);
+}
+
+.verbDELETE {
+    background-color: var(--verbDELTE);
 }
 
 
@@ -64,28 +84,28 @@
 
 .abcAPIContainer .titleGET {
     font-weight: bold;
-    background-color: #0F6AB4;
+    background-color: var(--verbGET);
     color: #fff;
     padding: 1px 5px 1px 4px;
 }
 
 .abcAPIContainer .titlePOST {
     font-weight: bold;
-    background-color: #10A54A;
+    background-color: var(--verbPOST);
     color: #fff;
     padding: 1px 5px 1px 4px;
 }
 
 .abcAPIContainer .titlePUT {
     font-weight: bold;
-    background-color: #C5862B;
+    background-color: var(--verbPUT);
     color: #fff;
     padding: 1px 5px 1px 4px;
 }
 
 .abcAPIContainer .titleDELETE {
     font-weight: bold;
-    background-color: #A41E22;
+    background-color: var(--verbDELETE);
     color: #fff;
     padding: 1px 5px 1px 4px;
 }
@@ -153,4 +173,16 @@
 
 .abcAPIContainer .oddRow {
     /* background-color: #aa6f00; */
+}
+
+.abcAPIContainer .containerForAbcFlow {
+    position: relative;
+    top: -10px;
+    left: 10px;
+    height: 180px;
+    width: 580px;
+    background-color: #20202080;
+    color: #ddd;
+    font-size: 12px;
+    margin-bottom: 10px;
 }
