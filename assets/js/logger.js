@@ -10,7 +10,7 @@ class abcLogger {
         - allow changing of the class of the title (currently steel blue), so that different servers (payer, provider) can be visually distinguished
         - Handle addAPILog body, headers, options; currently they are ignored
     *******************************************/
-    constructor() {
+    constructor(showFlowWindow = true) {
         this.abcAPIParams = {
             options: {
                 collapsed: true,
@@ -19,6 +19,7 @@ class abcLogger {
                 withLinks: true,
             }
         };
+        this._apiCount = 0; //incremented every time an API call is made
         this._logID = 0;  //incremeneted every time a new item is added to the log
         this._loggerTimers = [];    //<0 and the API has returned; >0 is the ms the API has been running
     }
@@ -32,9 +33,9 @@ class abcLogger {
     }
 
     //Add a text (HTML) log. Optional: className
-    addTextLog = (text, className, timeStamp=true) => {
+    addTextLog = (text, className, timeStamp = true) => {
         if (!className) className = "text";
-        if (timeStamp ) {
+        if (timeStamp) {
             const d = new Date();
             text = `<span style="color: #888; font-weight: 100;">${d.toLocaleTimeString()}: </span>` + text;
         }
@@ -53,6 +54,7 @@ class abcLogger {
         let s = `<span class="titleLeft">
                 &nbsp;<br>&nbsp;
             </span><span class="titleCenter">
+                [${this._apiCount}]
                 <i class="fa fa-arrow-right" aria-hidden="true"></i> <i class="fa fa-server" aria-hidden="true"></i> <span class="title${verb}">${verb}</span>
                 <a href="${API}" target="_blank">${API}</a><br>
                 <i class="fa fa-arrow-left" aria-hidden="true"></i> <i class="fa fa-server" aria-hidden="true"></i>
