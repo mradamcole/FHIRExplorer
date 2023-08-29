@@ -2,6 +2,11 @@
 <html lang="en">
 
 <head>
+    <!-- *** NB! The following emptry :root{} must be the first style on the page. *** -->
+    <style>
+        :root {}
+    </style>
+
     <title>Care Gaps</title>
 
     <!-- Favicons -->
@@ -37,6 +42,9 @@
     <!--  Fullcalendar (scheduling)  -->
     <link rel='stylesheet' type="text/css" href='assets/css/fc-core-main.css'>
     <link rel='stylesheet' type="text/css" href='assets/css/fc-timegrid-main.css'>
+
+    <!--  flow chart connectors and dynamic grid   -->
+    <link rel='stylesheet' type="text/css" href='assets/css/abcFlow.css'>
 
     <style>
         :root {
@@ -585,117 +593,6 @@
         }
 
 
-        /*************** Remote Server Operations (previously AJAX) ***************/
-        //async/await fetch (i.e. Promise AJAX). apiPath = everything after the domain (e.g. Patient/123). callbackfn e.g.: function(data){console.log(data)}
-        //   verb is optional, default = GET. bodyJSON is optional (JSON formatted). headersObj is optional, e.g. {"Content-Type": "text/plain",}. optionsObj is optional, e.g. {mode: "cors",}
-        async function APICall(apiPath, callbackFn, verb, bodyJSON, headersObj, optionsObj) {
-            apiPath = apiReplaceVar(apiPath);
-            try {
-                if (!verb) verb = "GET";
-                if (!optionsObj) optionsObj = {};
-                let api = dataParams.baseURL + apiPath;
-                //headers
-                let fetchHeaders = new Headers(
-                    headersObj
-                );
-                if (dataParams.baseCredentials != "Og==") { fetchHeaders.append("Authorization", `Basic ${dataParams.baseCredentials}`) }   //"Og==" is base64 encoding of anonymous credentials
-                //options
-                optionsObj.method = verb;
-                if (bodyJSON) optionsObj.body = JSON.stringify(bodyJSON);
-                optionsObj.headers = fetchHeaders;
-                //fetch
-                let logID = Logger.addAPILog(api, verb, bodyJSON, headersObj, optionsObj);    //Log the API call
-                const source = await fetch(api, optionsObj);
-                const result = await source.json();
-                if (callbackFn !== undefined) callbackFn(result);
-                Logger.addAPIReturn(logID, result, source); //Log the API returned value
-            } catch (err) {
-                console.log("err: ", err);
-            }
-        }
-
-
-        /*************** Generic FHIR functions ***************/
-        //change FHIR servers
-        changeServer = () => {
-            //Update the credentials
-            dataParams.baseCredentials = btoa(`${FHIRRefByRef(dataParams.servers, "server", dataParams.baseURL, "un")}:${FHIRRefByRef(dataParams.servers, "server", dataParams.baseURL, "pw")}`);
-        }
-
-        //Populate list of FHIR servers
-        addItemToSelect = (selectID, itemsAr) => {
-            let sel = document.getElementById(selectID);
-            itemsAr.forEach(element => {
-                opt = document.createElement("option");
-                opt.text = element;
-                sel.add(opt);
-            });
-        };
-
-        //Find a name=value in a FHIR array, and return a given node within. (E.g. Find link["relation"]="next" and return the URL)
-        FHIRRefByRef = (ar, searchName, searchValue, getNode) => {
-            for (let i = 0; i < ar.length; i++) {
-                if (ar[i][searchName] == searchValue) {
-                    return ar[i][getNode];
-                    break;
-                }
-            }
-            return "";
-        }
-
-
-        /*************** Generic functions ***************/
-        //Apply a transition rule. A durationMs of 0 is ignored and the default duration value is used. (For an instantaneous transition use 1; 0 doesn't behave as a transitiion; opacity=0 to avoid jitter)
-        addTransition = (el, styleProps, durationMs = 0) => {
-            return new Promise((resolve, reject) => {
-                function handleTransitionEnd() {
-                    resolve(el);
-                }
-                el.addEventListener("transitionend", handleTransitionEnd, {
-                    once: true
-                });
-                if (durationMs > 0) el.style.setProperty("transition", `${durationMs}ms`);
-                Object.entries(styleProps).forEach(([prop, value]) => {
-                    el.style.setProperty(prop, value);
-                });
-            });
-        }
-
-        //Update a CSS property. Optionally include a toggleVal, which will cause the CSS property to toggle between newVal and toggleVal
-        updateStyleRule = (selectorVal, property, newVal, toggleVal = null) => {
-            for (let i = 0; i < document.styleSheets.length; i++) {
-                let ss = document.styleSheets[i];
-                if (ss.ownerNode.toString() == "[object HTMLStyleElement]") {   //cannot operate on linked (external) stylesheets
-                    for (let j = 0; j < ss.cssRules.length; j++) {
-                        if (ss.cssRules[j].selectorText == selectorVal) {
-                            if (toggleVal) {
-                                let prop = ss.cssRules[j].style.getPropertyValue(property);
-                                ss.cssRules[j].style.setProperty(property, (prop == newVal ? toggleVal : newVal));
-                            } else {
-                                ss.cssRules[j].style.setProperty(property, newVal);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        //Add an element (default = <div>) to the document (default append to = <body>)
-        addHTMLel = (elID, className, appendTo = document.body, elType = "div") => {
-            const el = document.createElement(elType);
-            el.setAttribute('id', elID);
-            if (className) el.setAttribute('class', className);
-            appendTo.append(el);
-            return document.getElementById(elID);
-        }
-
-        //Convert a number (0-indexed) month number to the named month. Optionally include the number of characters in the returned month name
-        monthExpand = (monthIndex, chars) => {
-            const ar = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-            let mo = ar[monthIndex];
-            if (chars) mo = mo.substring(0, chars);
-            return mo;
-        }
 
         //Window resize actions
         winResizeEvent = () => {
@@ -739,6 +636,14 @@
         window.addEventListener('load', function () {
             Logger = new abcLogger();
             Logger.addTextLog("<img src='assets/img/sdh200.png' height=24 style='vertical-align: middle;'>&nbsp;&nbsp; API Monitor", "heading1", false);
+            //Add container for abcFlow inside the API Monitor
+            Logger.addTextLog(`<div class="containerForAbcFlow"><div id="abcFlowContainer" class="abcFlowContainer"></div></div>`, " ", false);
+            //Construct the abcFlow object, then add a row, then a cell, then content (client device icon)
+            ApiFlow = new abcFlow("abcFlowContainer");
+            ApiFlow.gridAdd("abcFlowContainer", "row", "abcFlowGrid");
+            let temp = ApiFlow.gridAdd("abcFlowGrid");
+            document.getElementById(temp).innerHTML = '<img id="clientDevice" src="assets/img/clientdevices.png" style="width: 50px;"><span style="position:relative; top:30px; left:-39px;">(me)</span>';
+
 
             changeServer();
 
@@ -875,6 +780,13 @@
                                             ],
                                         });
 
+                                        //Proceed to the next screen when a row is clicked. (For proper role playing, the user should drag a patient to the calendar, but this is provided as a backup.)
+                                        dqmPtList.on("rowClick", function (e, row) {
+                                            dataParams.curCareGap = row.getData();
+                                            spbNext();
+                                            Logger.addTextLog("Care Gap ID: " + row.getData().detectedIssueID + " selected");
+                                        });
+
                                         //Render the calendar only once the care gaps grid is populated.
                                         //Populate a temp table with all the table details so that the calendar onClick event can use these details to pass to the next stage
                                         dataParams.tempGrid = [];
@@ -883,7 +795,6 @@
                                             //  Unfortunately this event triggers repeatedly; not great for production but good enough for a demo
                                             abcCalendar.render();
                                             dataParams.tempGrid[dataParams.tempGrid.length] = row.getData();
-                                            console.log("temp >", dataParams.tempGrid)
                                         });
                                     }
                                 </script>
@@ -949,12 +860,12 @@
                                                 { id: 'bg1', resourceId: 'a', rendering: 'background', start: moment().subtract(1, 'd').format('YYYY-MM-DD'), end: moment().add(2, 'd').format('YYYY-MM-DD'), color: '#808080' },
                                                 { id: '1', resourceId: 'a', start: moment().subtract(1, 'd').format('YYYY-MM-DD'), end: moment().add(2, 'd').format('YYYY-MM-DD'), title: 'Vacation', backgroundColor: '#808080' },
                                             ],
-                                            
+
                                             // calendar event clicked; advance to the next page
                                             eventClick: function (info) {
                                                 info.el.style.borderColor = 'red';
                                                 // Get the patient details from the temp table (dataParams.tempGrid)
-                                                for (var i=0; i<dataParams.tempGrid.length; i++) {
+                                                for (var i = 0; i < dataParams.tempGrid.length; i++) {
                                                     if (dataParams.tempGrid[i].ptNameLF == info.event.title) {
                                                         dataParams.curCareGap = dataParams.tempGrid[i];
                                                         break;
@@ -1070,7 +981,7 @@
                 </div>
 
                 <!-- MockEMR Footer row -->
-                <div id="mockEMRFooter" class="rowFooter">Care Gaps Demo v1.1.4</div>
+                <div id="mockEMRFooter" class="rowFooter">Care Gaps Demo v1.1.6</div>
             </div> <!-- END: MockEMR -->
         </div>
 
@@ -1156,6 +1067,12 @@
 <!-- Moment (used in full schedule) -->
 <script type="text/javascript" src='assets/js/moment.min.js'></script>
 
+<!-- flow chart connectors and dynamic grid -->
+<script type="text/javascript" src='assets/js/abcFlow.js'></script>
+
+<!-- Generic functions -->
+<script type="text/javascript" src='assets/js/abcGeneric.js'></script>
+
 </html>
 
 <!-- TODO:
@@ -1165,6 +1082,8 @@
 5. Next appt is empty until it has been scheduled
 7. (5) redo this screen. Show a workflow (BPM or SVG, follow the bouncing ball)
 9. $care-gap has disappeared from the API list
+11. Bo: Add sequence flow diagram to presentation
+12. Bo: Add provenance
 DONE 2. Change the style of the tabs so they don't look clickable
 DONE 11 . Start demo with narrative visible
 Rob: 6. "clinical factors" ==> "rationale". (Clean up formatting of DSS)
